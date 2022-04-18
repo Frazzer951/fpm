@@ -1,9 +1,9 @@
 use std::io::Write;
-use std::path::PathBuf;
+
 
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
-use serde_json;
+
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
@@ -37,7 +37,7 @@ enum Commands {
     },
 }
 
-fn load_template(language: &String) -> Result<Template, Box<dyn std::error::Error>> {
+fn load_template(language: &str) -> Result<Template, Box<dyn std::error::Error>> {
     let filename = format!("templates/{language}.json");
     let f = std::fs::File::open(filename)?;
     let d: Template = serde_json::from_reader(f)?;
@@ -69,13 +69,13 @@ impl Folder {
     }
 }
 
-fn process_folder(mut path: std::path::PathBuf, folder: &Folder, proj_name: &String) -> std::io::Result<()> {
+fn process_folder(path: std::path::PathBuf, folder: &Folder, proj_name: &str) -> std::io::Result<()> {
     if folder.sub_folders.is_some() {
         for f in folder.sub_folders.as_ref().unwrap() {
             let mut new_path = path.clone();
             new_path.push(f.name.clone());
             std::fs::create_dir_all(&new_path)?;
-            process_folder(new_path, &f, proj_name)?;
+            process_folder(new_path, f, proj_name)?;
         }
     }
     for f in &folder.files {
@@ -84,7 +84,7 @@ fn process_folder(mut path: std::path::PathBuf, folder: &Folder, proj_name: &Str
     Ok(())
 }
 
-fn create_file(mut path: std::path::PathBuf, file: &File, proj_name: &String) -> std::io::Result<()> {
+fn create_file(mut path: std::path::PathBuf, file: &File, proj_name: &str) -> std::io::Result<()> {
     path.push(file.name.clone());
     //println!("{:#?}", path);
     let mut f = std::fs::File::create(path)?;
@@ -142,7 +142,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             std::fs::create_dir_all(&base).unwrap();
 
-            process_folder(base.clone(), &proj_folder, name);
+            process_folder(base.clone(), &proj_folder, name)?;
         }
     }
 
