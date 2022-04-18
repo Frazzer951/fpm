@@ -1,9 +1,7 @@
 use std::io::Write;
 
-
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
-
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
