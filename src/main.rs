@@ -1,3 +1,6 @@
+use std::io::Write;
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 use serde::Deserialize;
 use serde_json;
@@ -14,14 +17,22 @@ struct Cli {
 enum Commands {
     /// Create a new project directory
     Create {
+        /// The name of the new project
         name: String,
         #[clap(short, long)]
+        /// The language that the project will use.
         language: String,
+        #[clap(short, long, parse(from_os_str), default_value = ".")]
+        /// The base directory to place the project folders into
+        base_dir: std::path::PathBuf,
         #[clap(short, long)]
+        /// Whether to use the template for the language
         template: bool,
         #[clap(short, long)]
+        /// Create a git repo for the project
         git_repo: bool,
         #[clap(short, long)]
+        /// Open the folder when done
         open: bool,
     },
 }
@@ -58,6 +69,33 @@ impl Folder {
     }
 }
 
+fn process_folder(mut path: std::path::PathBuf, folder: &Folder, proj_name: &String) -> std::io::Result<()> {
+    if folder.sub_folders.is_some() {
+        for f in folder.sub_folders.as_ref().unwrap() {
+            let mut new_path = path.clone();
+            new_path.push(f.name.clone());
+            std::fs::create_dir_all(&new_path)?;
+            process_folder(new_path, &f, proj_name)?;
+        }
+    }
+    for f in &folder.files {
+        create_file(path.clone(), f, proj_name)?;
+    }
+    Ok(())
+}
+
+fn create_file(mut path: std::path::PathBuf, file: &File, proj_name: &String) -> std::io::Result<()> {
+    path.push(file.name.clone());
+    //println!("{:#?}", path);
+    let mut f = std::fs::File::create(path)?;
+    for line in &file.lines {
+        let line = line.replace("<name>", proj_name) + "\n";
+        f.write_all(line.as_bytes())?;
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
@@ -66,6 +104,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             name,
             language,
             template,
+            base_dir,
             ..
         } => {
             println!("Creating project named {}", name);
@@ -95,6 +134,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
 
             //println!("{:#?}", proj_folder);
+
+            let mut base = base_dir.clone();
+            base.push(language);
+            base.push(name);
+            //println!("{:#?}", base);
+
+            std::fs::create_dir_all(&base).unwrap();
+
+            process_folder(base.clone(), &proj_folder, name);
         }
     }
 
