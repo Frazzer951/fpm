@@ -101,9 +101,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Commands::Create {
             name,
             language,
-            template,
             base_dir,
-            ..
+            template,
+            git_repo,
+            open,
         } => {
             println!("Creating project named {}", name);
 
@@ -141,6 +142,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             std::fs::create_dir_all(&base).unwrap();
 
             process_folder(base.clone(), &proj_folder, name)?;
+
+            // open project folder
+            if *open {
+                std::process::Command::new("explorer").arg(base.to_str().unwrap()).spawn()?;
+            }
+
+            // initialize git
+            if *git_repo {
+                std::process::Command::new("git").arg("init").current_dir(&base).spawn()?;
+            }
         }
     }
 
