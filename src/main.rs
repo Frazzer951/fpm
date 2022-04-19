@@ -26,6 +26,9 @@ enum Commands {
         #[clap(short, long)]
         /// Whether to use the template for the language
         template: bool,
+        #[clap(short('n'), long, default_value = "")]
+        /// Specify specific template, leave blank for default template
+        template_name: String,
         #[clap(short, long)]
         /// Create a git repo for the project
         git_repo: bool,
@@ -35,8 +38,8 @@ enum Commands {
     },
 }
 
-fn load_template(language: &str) -> Result<Template, Box<dyn std::error::Error>> {
-    let filename = format!("templates/{language}.json");
+fn load_template(template_name: &str) -> Result<Template, Box<dyn std::error::Error>> {
+    let filename = format!("templates/{template_name}.json");
     let f = std::fs::File::open(filename)?;
     let d: Template = serde_json::from_reader(f)?;
     Ok(d)
@@ -103,6 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             language,
             base_dir,
             template,
+            template_name,
             git_repo,
             open,
         } => {
@@ -118,17 +122,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             if *template {
-                let yaml_template: Template = load_template(language)?;
+                println!("{}", template_name);
+                let template_name = if template_name.is_empty() { language } else { template_name };
+                println!("{}", template_name);
+
+                let yaml_template: Template = load_template(template_name)?;
                 //println!("{:#?}", yaml_template);
 
-                for file in yaml_template.files.unwrap() {
-                    //println!("file: {:#?}", file);
-                    proj_folder.files.push(file);
+                if yaml_template.files.is_some() {
+                    for file in yaml_template.files.unwrap() {
+                        //println!("file: {:#?}", file);
+                        proj_folder.files.push(file);
+                    }
                 }
 
-                for folder in yaml_template.folders.unwrap() {
-                    //println!("folder: {:#?}", folder);
-                    proj_folder.add_sub_folder(folder);
+                if yaml_template.folders.is_some() {
+                    for folder in yaml_template.folders.unwrap() {
+                        //println!("folder: {:#?}", folder);
+                        proj_folder.add_sub_folder(folder);
+                    }
                 }
             }
 

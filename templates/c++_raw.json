@@ -1,0 +1,13 @@
+{
+  "files": [
+    {
+      "name": "main.cpp",
+      "lines": [
+        "#include <iostream>",
+        "int main() {",
+        "  std::cout << \"Hello World!\" << std::endl;",
+        "}"
+      ]
+    }
+  ]
+}
