@@ -74,11 +74,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
             }
 
+            // Generate path for project folder
+            let mut base = base_dir.clone();
+            base.push(language);
+            base.push(name);
+
             // If user chose to use a template, load it
             if *template {
                 let template_name = if template_name.is_empty() { language } else { template_name };
 
                 let yaml_template: Template = load_template(template_name)?;
+
+                if yaml_template.commands.is_some() {
+                    for command in yaml_template.commands.unwrap() {
+                        let cmd = command.replace("<path>", base.to_str().unwrap());
+                        let command: Vec<&str> = cmd.split(' ').collect();
+                        std::process::Command::new(command[0]).args(&command[1..]).spawn()?.wait()?;
+                    }
+                }
 
                 if yaml_template.files.is_some() {
                     for file in yaml_template.files.unwrap() {
@@ -92,11 +105,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-
-            // Generate path for project folder
-            let mut base = base_dir.clone();
-            base.push(language);
-            base.push(name);
 
             // Create all the needed directories
             std::fs::create_dir_all(&base).unwrap();

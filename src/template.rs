@@ -11,6 +11,7 @@ pub fn load_template(template_name: &str) -> Result<Template, Box<dyn std::error
 pub struct Template {
     pub folders: Option<Vec<Folder>>,
     pub files: Option<Vec<File>>,
+    pub commands: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]
