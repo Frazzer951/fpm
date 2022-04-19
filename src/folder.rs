@@ -12,8 +12,10 @@ pub fn process_folder(path: std::path::PathBuf, folder: &Folder, proj_name: &str
             process_folder(new_path, f, proj_name)?;
         }
     }
-    for f in &folder.files {
-        create_file(path.clone(), f, proj_name)?;
+    if folder.files.is_some() {
+        for f in folder.files.as_ref().unwrap() {
+            create_file(path.clone(), f, proj_name)?;
+        }
     }
     Ok(())
 }

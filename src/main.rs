@@ -38,6 +38,9 @@ enum Commands {
         #[clap(short, long)]
         /// Open the folder when done
         open: bool,
+        #[clap(short, long)]
+        /// Include a basic README.md file
+        readme: bool,
     },
 }
 
@@ -53,18 +56,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             template_name,
             git_repo,
             open,
+            readme,
         } => {
             println!("Creating project named {}", name);
 
             // Create base folder
             let mut proj_folder = Folder {
                 name: name.clone(),
-                files: vec![File {
-                    name: "README.md".to_string(),
-                    lines: vec![format!("# {name}")],
-                }],
+                files: None,
                 sub_folders: None,
             };
+
+            if *readme {
+                proj_folder.add_file(File {
+                    name: "README.md".to_string(),
+                    lines: vec![format!("# {name}")],
+                })
+            }
 
             // If user chose to use a template, load it
             if *template {
@@ -74,7 +82,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 if yaml_template.files.is_some() {
                     for file in yaml_template.files.unwrap() {
-                        proj_folder.files.push(file);
+                        proj_folder.add_file(file);
                     }
                 }
 

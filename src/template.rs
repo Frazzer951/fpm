@@ -16,7 +16,7 @@ pub struct Template {
 #[derive(Debug, Deserialize)]
 pub struct Folder {
     pub name: String,
-    pub files: Vec<File>,
+    pub files: Option<Vec<File>>,
     pub sub_folders: Option<Vec<Folder>>,
 }
 
@@ -29,5 +29,8 @@ pub struct File {
 impl Folder {
     pub fn add_sub_folder(&mut self, folder: Folder) {
         self.sub_folders.get_or_insert_with(Vec::new).push(folder);
+    }
+    pub fn add_file(&mut self, file: File) {
+        self.files.get_or_insert_with(Vec::new).push(file);
     }
 }
