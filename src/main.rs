@@ -56,6 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } => {
             println!("Creating project named {}", name);
 
+            // Create base folder
             let mut proj_folder = Folder {
                 name: name.clone(),
                 files: vec![File {
@@ -65,6 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 sub_folders: None,
             };
 
+            // If user chose to use a template, load it
             if *template {
                 let template_name = if template_name.is_empty() { language } else { template_name };
 
@@ -83,12 +85,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
 
+            // Generate path for project folder
             let mut base = base_dir.clone();
             base.push(language);
             base.push(name);
 
+            // Create all the needed directories
             std::fs::create_dir_all(&base).unwrap();
 
+            // Create all the folders and file
             process_folder(base.clone(), &proj_folder, name)?;
 
             // open project folder
