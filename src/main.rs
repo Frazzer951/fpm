@@ -79,6 +79,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             base.push(language);
             base.push(name);
 
+            // Create all the needed directories
+            std::fs::create_dir_all(&base).unwrap();
+
             // If user chose to use a template, load it
             if *template {
                 let template_name = if template_name.is_empty() { language } else { template_name };
@@ -105,9 +108,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                 }
             }
-
-            // Create all the needed directories
-            std::fs::create_dir_all(&base).unwrap();
 
             // Create all the folders and file
             process_folder(base.clone(), &proj_folder, name)?;
