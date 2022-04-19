@@ -1,7 +1,10 @@
-use std::io::Write;
-
 use clap::{Parser, Subcommand};
-use serde::Deserialize;
+
+mod folder;
+mod template;
+
+use folder::process_folder;
+use template::{load_template, File, Folder, Template};
 
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
@@ -38,65 +41,6 @@ enum Commands {
     },
 }
 
-fn load_template(template_name: &str) -> Result<Template, Box<dyn std::error::Error>> {
-    let filename = format!("templates/{template_name}.json");
-    let f = std::fs::File::open(filename)?;
-    let d: Template = serde_json::from_reader(f)?;
-    Ok(d)
-}
-
-#[derive(Debug, Deserialize)]
-struct Template {
-    folders: Option<Vec<Folder>>,
-    files: Option<Vec<File>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct Folder {
-    name: String,
-    files: Vec<File>,
-    sub_folders: Option<Vec<Folder>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct File {
-    name: String,
-    lines: Vec<String>,
-}
-
-impl Folder {
-    pub fn add_sub_folder(&mut self, folder: Folder) {
-        self.sub_folders.get_or_insert_with(Vec::new).push(folder);
-    }
-}
-
-fn process_folder(path: std::path::PathBuf, folder: &Folder, proj_name: &str) -> std::io::Result<()> {
-    if folder.sub_folders.is_some() {
-        for f in folder.sub_folders.as_ref().unwrap() {
-            let mut new_path = path.clone();
-            new_path.push(f.name.clone());
-            std::fs::create_dir_all(&new_path)?;
-            process_folder(new_path, f, proj_name)?;
-        }
-    }
-    for f in &folder.files {
-        create_file(path.clone(), f, proj_name)?;
-    }
-    Ok(())
-}
-
-fn create_file(mut path: std::path::PathBuf, file: &File, proj_name: &str) -> std::io::Result<()> {
-    path.push(file.name.clone());
-    //println!("{:#?}", path);
-    let mut f = std::fs::File::create(path)?;
-    for line in &file.lines {
-        let line = line.replace("<name>", proj_name) + "\n";
-        f.write_all(line.as_bytes())?;
-    }
-
-    Ok(())
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
 
@@ -122,34 +66,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             if *template {
-                println!("{}", template_name);
                 let template_name = if template_name.is_empty() { language } else { template_name };
-                println!("{}", template_name);
 
                 let yaml_template: Template = load_template(template_name)?;
-                //println!("{:#?}", yaml_template);
 
                 if yaml_template.files.is_some() {
                     for file in yaml_template.files.unwrap() {
-                        //println!("file: {:#?}", file);
                         proj_folder.files.push(file);
                     }
                 }
 
                 if yaml_template.folders.is_some() {
                     for folder in yaml_template.folders.unwrap() {
-                        //println!("folder: {:#?}", folder);
                         proj_folder.add_sub_folder(folder);
                     }
                 }
             }
 
-            //println!("{:#?}", proj_folder);
-
             let mut base = base_dir.clone();
             base.push(language);
             base.push(name);
-            //println!("{:#?}", base);
 
             std::fs::create_dir_all(&base).unwrap();
 
