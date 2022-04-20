@@ -1,5 +1,4 @@
 use clap::{Parser, Subcommand};
-use platform_dirs::{AppDirs};
 
 mod folder;
 mod template;
@@ -43,8 +42,6 @@ enum Commands {
         /// Include a basic README.md file
         readme: bool,
     },
-    /// Change Config Settings
-    Config {},
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -124,10 +121,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             if *git_repo {
                 std::process::Command::new("git").arg("init").current_dir(&base).spawn()?;
             }
-        }
-        Commands::Config { .. } => {
-            let app_dirs = AppDirs::new(Some("project_manager"), false).unwrap();
-            dbg!(&app_dirs);
         }
     }
 
