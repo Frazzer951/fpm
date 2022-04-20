@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use platform_dirs::{AppDirs};
+use platform_dirs::AppDirs;
 
 mod folder;
 mod template;
