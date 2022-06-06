@@ -4,7 +4,6 @@ use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
-use toml;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
@@ -14,13 +13,20 @@ const PROJECT_NAME: &str = "fpm";
 type Result<T> = std::result::Result<T, ConfigError>;
 
 #[derive(Debug, Clone)]
-enum ConfigError { LoadingError, ParsingError }
+enum ConfigError {
+    LoadingError,
+    ParsingError,
+}
 
 impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ConfigError::LoadingError => { write!(f, "Failed to load config file") }
-            ConfigError::ParsingError => { write!(f, "Failed to parse config file") }
+            ConfigError::LoadingError => {
+                write!(f, "Failed to load config file")
+            }
+            ConfigError::ParsingError => {
+                write!(f, "Failed to parse config file")
+            }
         }
     }
 }
@@ -72,7 +78,12 @@ fn main() {
     };
 
     match &cli.command {
-        Commands::New { name, p_type, category, directory } => {
+        Commands::New {
+            name,
+            p_type,
+            category,
+            directory,
+        } => {
             if config.base_dir.is_none() && directory.is_none() {
                 eprintln!("No directory was specified, and the global Base Directory is not set.");
                 eprintln!("Specify a directory in the command, or set a global directory with the config command`");
@@ -80,7 +91,9 @@ fn main() {
             }
             let dir = directory.as_ref().unwrap_or_else(|| config.base_dir.as_ref().unwrap());
             let mut project_path = std::path::PathBuf::from_str(dir).unwrap();
-            if p_type.is_some() { project_path.push(p_type.as_ref().unwrap()); }
+            if p_type.is_some() {
+                project_path.push(p_type.as_ref().unwrap());
+            }
             project_path.push(name);
 
             // create project folders
@@ -96,15 +109,11 @@ fn load_config() -> Result<Config> {
 
     let contents = match fs::read_to_string(config_dir) {
         Ok(c) => Ok(c),
-        Err(_) => {
-            Err(ConfigError::LoadingError)
-        }
+        Err(_) => Err(ConfigError::LoadingError),
     }?;
 
     match toml::from_str(&contents) {
         Ok(d) => Ok(d),
-        Err(_) => {
-            Err(ConfigError::ParsingError)
-        }
+        Err(_) => Err(ConfigError::ParsingError),
     }
 }
