@@ -1,6 +1,5 @@
-use std::fmt;
-use std::fs;
 use std::str::FromStr;
+use std::{fmt, fs};
 
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
@@ -23,10 +22,10 @@ impl fmt::Display for ConfigError {
         match self {
             ConfigError::LoadingError => {
                 write!(f, "Failed to load config file")
-            }
+            },
             ConfigError::ParsingError => {
                 write!(f, "Failed to parse config file")
-            }
+            },
         }
     }
 }
@@ -54,11 +53,11 @@ enum Commands {
     /// Create a New project
     New {
         #[clap(short, long)]
-        name: String,
+        name:      String,
         #[clap(short = 't', long = "type", value_name = "TYPE")]
-        p_type: Option<String>,
+        p_type:    Option<String>,
         #[clap(short, long)]
-        category: Option<String>,
+        category:  Option<String>,
         #[clap(short, long)]
         directory: Option<String>,
     },
@@ -73,7 +72,7 @@ fn main() {
         Err(ConfigError::LoadingError) => {
             eprintln!("Failed to load the config file using default settings");
             Config::default()
-        }
+        },
         Err(_) => todo!("Config Error Handling"),
     };
 
@@ -98,7 +97,7 @@ fn main() {
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
-        }
+        },
     }
 }
 

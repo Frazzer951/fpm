@@ -44,10 +44,19 @@ jobs:
         with:
           command: check
 
-  lints:
-    name: Lints
-    runs-on: ubuntu-latest
+  test_offline:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    needs: check
+    name: Offline tests
+    runs-on: "${{ matrix.os }}"
     steps:
+      - name: "Git: enable longpaths"
+        run: git config --global core.longpaths true
       - name: Checkout sources
         uses: actions/checkout@v3
       - name: Install stable toolchain
@@ -56,10 +65,55 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-          components: "rustfmt, clippy"
       - uses: Swatinem/rust-cache@v1.4.0
         with:
           sharedKey: cache
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: "-- test --offline"
+
+  #  lints:
+  #    name: Lints
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Checkout sources
+  #        uses: actions/checkout@v3
+  #      - name: Install stable toolchain
+  #        uses: actions-rs/toolchain@v1
+  #        with:
+  #          profile: minimal
+  #          toolchain: stable
+  #          override: true
+  #          components: "rustfmt, clippy"
+  #      - uses: Swatinem/rust-cache@v1.4.0
+  #        with:
+  #          sharedKey: cache
+  #      - name: Run cargo fmt
+  #        uses: actions-rs/cargo@v1
+  #        with:
+  #          command: fmt
+  #          args: "--all -- --check"
+  #      - name: Clippy with warnings
+  #        uses: actions-rs/cargo@v1
+  #        with:
+  #          command: clippy
+  #          args: "--all-targets --all-features -- -D warnings"
+
+  lints_nightly:
+    name: Lints (nightly)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: "rustfmt, clippy"
       - name: Run cargo fmt
         uses: actions-rs/cargo@v1
         with:
@@ -70,27 +124,3 @@ jobs:
         with:
           command: clippy
           args: "--all-targets --all-features -- -D warnings"
-
-#  lints_nightly:
-#    name: Lints (nightly)
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout sources
-#        uses: actions/checkout@v3
-#      - name: Install stable toolchain
-#        uses: actions-rs/toolchain@v1
-#        with:
-#          profile: minimal
-#          toolchain: nightly
-#          override: true
-#          components: "rustfmt, clippy"
-#      - name: Run cargo fmt
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: fmt
-#          args: "--all -- --check"
-#      - name: Clippy with warnings
-#        uses: actions-rs/cargo@v1
-#        with:
-#          command: clippy
-#          args: "--all-targets --all-features -- -D warnings"
