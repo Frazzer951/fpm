@@ -1,0 +1,30 @@
+{
+  "folders": [
+    {
+      "name": "src",
+      "files": [
+        {
+          "name": "main.cpp",
+          "lines": [
+            "#include <iostream>",
+            "int main() {",
+            "  std::cout << \"Hello World!\" << std::endl;",
+            "}"
+          ]
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "name": "CMakeLists.txt",
+      "lines": [
+        "cmake_minimum_required(VERSION 3.11.0)",
+        "project(<NAME> VERSION 1.0.0)",
+        "add_executable(${PROJECT_NAME} src/main.cpp, ${src_files})"
+      ]
+    }
+  ]
+}
+
+

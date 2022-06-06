@@ -1,0 +1,3 @@
+{
+  "commands": ["cargo new <path>/"]
+}
