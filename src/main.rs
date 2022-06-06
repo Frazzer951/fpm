@@ -80,7 +80,7 @@ fn main() {
         Commands::New {
             name,
             p_type,
-            category,
+            category: _,
             directory,
         } => {
             if config.base_dir.is_none() && directory.is_none() {
