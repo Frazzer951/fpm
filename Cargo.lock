@@ -65,6 +65,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "fpm"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -150,15 +159,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c54b25569025b7fc9651de43004ae593a75ad88543b17178aa5e1b9c4f15f56f"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "project_manager"
-version = "0.1.0"
-dependencies = [
- "clap",
- "serde",
- "serde_json",
 ]
 
 [[package]]
