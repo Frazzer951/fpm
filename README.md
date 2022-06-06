@@ -10,7 +10,7 @@ A CLI app to create and manage projected
 
 | Command | Description                    |
 |---------|--------------------------------|
-| Create  | Create a new project directory |
+| Create  | Create a New project directory |
 
 ## Create
 

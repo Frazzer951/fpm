@@ -1,11 +1,39 @@
+use std::fmt;
+use std::fs;
+
 use clap::{Parser, Subcommand};
+use serde::{Deserialize, Serialize};
+use toml;
 
-mod folder;
-mod template;
+// region -- Project Constants
+const PROJECT_NAME: &str = "fpm";
+// endregion
 
-use folder::process_folder;
-use template::{load_template, File, Folder, Template};
+// region -- Custom Errors
+type Result<T> = std::result::Result<T, ConfigError>;
 
+#[derive(Debug, Clone)]
+enum ConfigError { LoadingError, ParsingError }
+
+impl fmt::Display for ConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ConfigError::LoadingError => { write!(f, "Failed to load config file") }
+            ConfigError::ParsingError => { write!(f, "Failed to parse config file") }
+        }
+    }
+}
+// endregion
+
+// region -- Config Struct
+#[derive(Deserialize, Serialize, Default, Debug)]
+struct Config {
+    #[serde(default)]
+    base_dir: Option<String>,
+}
+// endregion
+
+// region -- CLI Structs
 #[derive(Parser)]
 #[clap(version, about, long_about = None)]
 #[clap(propagate_version = true)]
@@ -16,113 +44,56 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Create a new project directory
-    Create {
-        /// The name of the new project
+    /// Create a New project
+    New {
+        #[clap(short, long)]
         name: String,
+        #[clap(short = 't', long = "type", value_name = "TYPE")]
+        p_type: Option<String>,
         #[clap(short, long)]
-        /// The language that the project will use.
-        language: String,
-        #[clap(short, long, parse(from_os_str), default_value = ".")]
-        /// The base directory to place the project folders into
-        base_dir: std::path::PathBuf,
+        category: Option<String>,
         #[clap(short, long)]
-        /// Whether to use the template for the language
-        template: bool,
-        #[clap(short('n'), long, default_value = "")]
-        /// Specify specific template, leave blank for default template
-        template_name: String,
-        #[clap(short, long)]
-        /// Create a git repo for the project
-        git_repo: bool,
-        #[clap(short, long)]
-        /// Open the folder when done
-        open: bool,
-        #[clap(short, long)]
-        /// Include a basic README.md file
-        readme: bool,
+        directory: Option<String>,
     },
 }
+// endregion
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     let cli = Cli::parse();
 
+    let config = match load_config() {
+        Ok(c) => c,
+        Err(ConfigError::LoadingError) => {
+            eprintln!("Failed to load the config file using default settings");
+            Config::default()
+        }
+        Err(_) => todo!("Config Error Handling"),
+    };
+
+    println!("{:#?}", config);
+
     match &cli.command {
-        Commands::Create {
-            name,
-            language,
-            base_dir,
-            template,
-            template_name,
-            git_repo,
-            open,
-            readme,
-        } => {
-            println!("Creating project named {}", name);
+        Commands::New { name, p_type, category, directory } => {}
+    }
+}
 
-            // Create base folder
-            let mut proj_folder = Folder {
-                name: name.clone(),
-                files: None,
-                sub_folders: None,
-            };
+fn load_config() -> Result<Config> {
+    let mut config_dir = dirs::config_dir().unwrap();
+    config_dir.push(PROJECT_NAME);
+    config_dir.push("config.toml");
+    println!("{:?}", config_dir);
 
-            if *readme {
-                proj_folder.add_file(File {
-                    name: "README.md".to_string(),
-                    lines: vec![format!("# {name}")],
-                })
-            }
+    let contents = match fs::read_to_string(config_dir) {
+        Ok(c) => Ok(c),
+        Err(_) => {
+            Err(ConfigError::LoadingError)
+        }
+    }?;
 
-            // Generate path for project folder
-            let mut base = base_dir.clone();
-            base.push(language);
-            base.push(name);
-
-            // Create all the needed directories
-            std::fs::create_dir_all(&base).unwrap();
-
-            // If user chose to use a template, load it
-            if *template {
-                let template_name = if template_name.is_empty() { language } else { template_name };
-
-                let yaml_template: Template = load_template(template_name)?;
-
-                if yaml_template.commands.is_some() {
-                    for command in yaml_template.commands.unwrap() {
-                        let cmd = command.replace("<path>", base.to_str().unwrap());
-                        let command: Vec<&str> = cmd.split(' ').collect();
-                        std::process::Command::new(command[0]).args(&command[1..]).spawn()?.wait()?;
-                    }
-                }
-
-                if yaml_template.files.is_some() {
-                    for file in yaml_template.files.unwrap() {
-                        proj_folder.add_file(file);
-                    }
-                }
-
-                if yaml_template.folders.is_some() {
-                    for folder in yaml_template.folders.unwrap() {
-                        proj_folder.add_sub_folder(folder);
-                    }
-                }
-            }
-
-            // Create all the folders and file
-            process_folder(base.clone(), &proj_folder, name)?;
-
-            // open project folder
-            if *open {
-                std::process::Command::new("explorer").arg(base.to_str().unwrap()).spawn()?;
-            }
-
-            // initialize git
-            if *git_repo {
-                std::process::Command::new("git").arg("init").current_dir(&base).spawn()?;
-            }
+    match toml::from_str(&contents) {
+        Ok(d) => Ok(d),
+        Err(_) => {
+            Err(ConfigError::ParsingError)
         }
     }
-
-    Ok(())
 }
