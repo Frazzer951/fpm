@@ -1,6 +1,7 @@
 use std::{fmt, fs};
 
 use clap::ArgEnum;
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_DB_FILENAME, PROJECT_NAME};
@@ -42,7 +43,7 @@ pub enum ConfigOptions {
 // endregion
 
 // region -- Project Struct
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Default, Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Project {
     pub name:      String,
     pub directory: String,
@@ -107,6 +108,9 @@ pub fn save_projects(projects: Vec<Project>) {
     fs::create_dir_all(projects_dir.clone()).unwrap();
 
     projects_dir.push(PROJECT_DB_FILENAME);
+
+    // remove duplicates
+    let projects: Vec<Project> = projects.into_iter().unique().collect();
 
     // save config to config_dir
     let contents = serde_json::to_string(&projects).unwrap();
