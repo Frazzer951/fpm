@@ -1,9 +1,8 @@
-use std::str::FromStr;
 use std::{fmt, fs};
+use std::str::FromStr;
 
 use clap::{ArgEnum, Parser, Subcommand};
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
@@ -153,16 +152,23 @@ fn main() {
             }
             let dir = directory.as_ref().unwrap_or_else(|| config.base_dir.as_ref().unwrap());
             let mut project_path = std::path::PathBuf::from_str(dir).unwrap();
-            if p_type.is_some() {
-                project_path.push(p_type.as_ref().unwrap());
-            }
             if category.is_some() {
                 project_path.push(category.as_ref().unwrap());
+            }
+            if p_type.is_some() {
+                project_path.push(p_type.as_ref().unwrap());
             }
             project_path.push(name);
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
+
+            // if the folder at project_path isn't empty throw an error
+            if fs::read_dir(project_path.clone()).unwrap().count() > 0 {
+                eprintln!("The directory specified already exists and is not empty");
+                eprintln!("{:#?}", project_path);
+                return;
+            }
 
             // add project to known projects
             projects.push(Project {
