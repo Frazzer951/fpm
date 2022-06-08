@@ -13,7 +13,6 @@ pub enum FileError {
     LoadingError,
     ParsingError,
 }
-// endregion
 
 impl fmt::Display for FileError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -27,6 +26,7 @@ impl fmt::Display for FileError {
         }
     }
 }
+// endregion
 
 // region -- Config Struct
 #[derive(Deserialize, Serialize, Default, Debug)]

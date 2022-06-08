@@ -2,9 +2,13 @@ use std::fs;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
+
 use file_handler::{Config, ConfigOptions, FileError, Project};
 
+use crate::project_structure::{Folder, load_template};
+
 mod file_handler;
+mod project_structure;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
@@ -38,6 +42,9 @@ enum Commands {
         #[clap(short, long)]
         /// Manually specify the base directory to use. -- Overrides base_dir specified in config
         directory: Option<String>,
+        #[clap(long)]
+        /// A Template to use when generating a project
+        template:  Option<String>,
     },
     /// Configuration Settings
     Config {
@@ -64,7 +71,7 @@ enum ConfigCommands {
 fn main() {
     let cli = Cli::parse();
 
-    let mut config = match load_config() {
+    let mut config = match file_handler::load_config() {
         Ok(c) => c,
         Err(FileError::LoadingError) => {
             eprintln!("Failed to load the config file using default settings");
@@ -114,6 +121,19 @@ fn main() {
                 project_path.push(p_type.as_ref().unwrap());
             }
             project_path.push(name);
+
+                        let mut project = Folder {
+                name:        name.clone(),
+                files:       vec![],
+                sub_folders: vec![],
+                commands:    vec![],
+            };
+
+            if template.is_some() {
+                load_template(&mut project, template.as_ref().unwrap().clone());
+            }
+
+            println!("{:#?}", project);
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
