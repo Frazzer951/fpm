@@ -1,6 +1,6 @@
 use std::{fmt, fs};
 
-use clap::{ArgEnum};
+use clap::ArgEnum;
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_DB_FILENAME, PROJECT_NAME};
