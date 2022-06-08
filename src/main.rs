@@ -2,10 +2,9 @@ use std::fs;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
-
 use file_handler::{Config, ConfigOptions, FileError, Project};
 
-use crate::project_structure::{Folder, load_template};
+use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 
 mod file_handler;
 mod project_structure;
@@ -122,7 +121,7 @@ fn main() {
             }
             project_path.push(name);
 
-                        let mut project = Folder {
+            let mut project = Folder {
                 name:        name.clone(),
                 files:       vec![],
                 sub_folders: vec![],
@@ -133,7 +132,7 @@ fn main() {
                 load_template(&mut project, template.as_ref().unwrap().clone());
             }
 
-            println!("{:#?}", project);
+            // println!("{:#?}", project);
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
@@ -144,6 +143,13 @@ fn main() {
                 eprintln!("{:#?}", project_path);
                 return;
             }
+
+            let template_vars = TemplateVars {
+                project_name: name.clone(),
+            };
+
+            // build the project
+            build_folder(project_path.clone(), &project, &template_vars);
 
             // add project to known projects
             projects.push(Project {
