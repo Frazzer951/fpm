@@ -3,27 +3,28 @@ use std::{fmt, fs};
 
 use clap::{ArgEnum, Parser, Subcommand};
 use serde::{Deserialize, Serialize};
+use serde_json;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
 // endregion
 
 // region -- Custom Errors
-type Result<T> = std::result::Result<T, ConfigError>;
+type Result<T> = std::result::Result<T, FileError>;
 
 #[derive(Debug, Clone)]
-enum ConfigError {
+enum FileError {
     LoadingError,
     ParsingError,
 }
 
-impl fmt::Display for ConfigError {
+impl fmt::Display for FileError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ConfigError::LoadingError => {
+            FileError::LoadingError => {
                 write!(f, "Failed to load config file")
             },
-            ConfigError::ParsingError => {
+            FileError::ParsingError => {
                 write!(f, "Failed to parse config file")
             },
         }
@@ -41,6 +42,18 @@ struct Config {
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
 enum ConfigOptions {
     BaseDir,
+}
+// endregion
+
+// region -- Project Struct
+#[derive(Deserialize, Serialize, Default, Debug)]
+struct Project {
+    name:      String,
+    directory: String,
+    #[serde(default)]
+    category:  Option<String>,
+    #[serde(default)]
+    p_type:    Option<String>,
 }
 // endregion
 
@@ -98,18 +111,26 @@ fn main() {
 
     let mut config = match load_config() {
         Ok(c) => c,
-        Err(ConfigError::LoadingError) => {
+        Err(FileError::LoadingError) => {
             eprintln!("Failed to load the config file using default settings");
             Config::default()
         },
         Err(_) => todo!("Config Error Handling"),
     };
 
+    let mut projects = match load_projects() {
+        Ok(p) => p,
+        Err(FileError::LoadingError) => {
+            vec![]
+        },
+        Err(_) => todo!("Project Error Handling"),
+    };
+
     match &cli.command {
         Commands::New {
             name,
             p_type,
-            category: _,
+            category,
             directory,
         } => {
             if config.base_dir.is_none() && directory.is_none() {
@@ -122,10 +143,22 @@ fn main() {
             if p_type.is_some() {
                 project_path.push(p_type.as_ref().unwrap());
             }
+            if category.is_some() {
+                project_path.push(category.as_ref().unwrap());
+            }
             project_path.push(name);
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
+
+            // add project to known projects
+            projects.push(Project {
+                name:      name.clone(),
+                directory: String::from(project_path.to_str().unwrap()),
+                category:  category.clone(),
+                p_type:    p_type.clone(),
+            });
+            save_projects(projects);
         },
         Commands::Config { command } => match &command {
             ConfigCommands::Set { setting, value } => {
@@ -149,12 +182,28 @@ fn load_config() -> Result<Config> {
 
     let contents = match fs::read_to_string(config_dir) {
         Ok(c) => Ok(c),
-        Err(_) => Err(ConfigError::LoadingError),
+        Err(_) => Err(FileError::LoadingError),
     }?;
 
     match toml::from_str(&contents) {
         Ok(d) => Ok(d),
-        Err(_) => Err(ConfigError::ParsingError),
+        Err(_) => Err(FileError::ParsingError),
+    }
+}
+
+fn load_projects() -> Result<Vec<Project>> {
+    let mut projects_dir = dirs::config_dir().unwrap();
+    projects_dir.push(PROJECT_NAME);
+    projects_dir.push("projects.json");
+
+    let contents = match fs::read_to_string(projects_dir) {
+        Ok(c) => Ok(c),
+        Err(_) => Err(FileError::LoadingError),
+    }?;
+
+    match serde_json::from_str(&contents) {
+        Ok(d) => Ok(d),
+        Err(_) => Err(FileError::ParsingError),
     }
 }
 
@@ -170,4 +219,18 @@ fn save_config(config: Config) {
     // save config to config_dir
     let contents = toml::to_string(&config).unwrap();
     fs::write(config_dir, contents).unwrap();
+}
+
+fn save_projects(projects: Vec<Project>) {
+    let mut projects_dir = dirs::config_dir().unwrap();
+    projects_dir.push(PROJECT_NAME);
+
+    // make sure path exists
+    fs::create_dir_all(projects_dir.clone()).unwrap();
+
+    projects_dir.push("projects.json");
+
+    // save config to config_dir
+    let contents = serde_json::to_string(&projects).unwrap();
+    fs::write(projects_dir, contents).unwrap();
 }
