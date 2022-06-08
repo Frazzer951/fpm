@@ -1,6 +1,7 @@
 use std::fs;
 use std::io::Write;
-use std::process::{exit, Command};
+use std::path::PathBuf;
+use std::process::{Command, exit};
 
 use serde::{Deserialize, Serialize};
 
@@ -8,9 +9,9 @@ use crate::PROJECT_NAME;
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct Folder {
-    pub name:        String,
+    pub name: String,
     #[serde(default)]
-    pub files:       Vec<File>,
+    pub files: Vec<File>,
     #[serde(default)]
     pub sub_folders: Vec<Folder>,
     #[serde(default)]
@@ -74,13 +75,23 @@ pub fn load_template(project: &mut Folder, mut template_name: String) {
     project.commands.extend(template.commands);
 
     // open and parse folder pointer
-    if let Some(_folder_pointer) = template.folder_pointer {
-        todo!()
+    if let Some(folder_pointer) = template.folder_pointer {
+        let mut file_path = dirs::config_dir().unwrap();
+        file_path.push(PROJECT_NAME);
+        file_path.push("templates");
+        file_path.push(folder_pointer);
+        let folder = load_folder(file_path);
+        project.sub_folders.extend(folder.sub_folders);
+        project.files.extend(folder.files);
     }
 
     // open and parse file pointer
-    if let Some(_file_pointer) = template.file_pointer {
-        todo!()
+    if let Some(file_pointer) = template.file_pointer {
+        let mut file_path = dirs::config_dir().unwrap();
+        file_path.push(PROJECT_NAME);
+        file_path.push("templates");
+        file_path.push(file_pointer);
+        project.files.push(load_file(file_path));
     }
 }
 
@@ -123,4 +134,41 @@ fn process_template_vars(string: &str, vars: &TemplateVars) -> String {
     let line = string.replace("{fpm_project_name}", vars.project_name.as_str());
 
     line
+}
+
+fn load_file(path: PathBuf) -> File {
+    let contents = match fs::read_to_string(path.clone()) {
+        Ok(c) => c,
+        Err(_) => {
+            eprintln!("The file: {} could not be found", path.display());
+            exit(1);
+        },
+    };
+
+    File {
+        filename: path.file_name().unwrap().to_str().unwrap().to_string(),
+        lines_of_file: vec![contents],
+    }
+}
+
+fn load_folder(path: PathBuf) -> Folder {
+    let mut folder = Folder {
+        name: path.file_name().unwrap().to_str().unwrap().to_string(),
+        files: vec![],
+        sub_folders: vec![],
+        commands: vec![],
+    };
+
+    // walk the directory at path
+    for entry in fs::read_dir(path).unwrap() {
+        let entry = entry.unwrap();
+        let path = entry.path();
+        if path.is_dir() {
+            folder.sub_folders.push(load_folder(path));
+        } else {
+            folder.files.push(load_file(path));
+        }
+    }
+
+    folder
 }
