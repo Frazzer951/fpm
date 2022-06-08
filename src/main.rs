@@ -7,6 +7,8 @@ use serde_json;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
+const CONFIG_FILENAME: &str = "config.toml";
+const PROJECT_DB_FILENAME: &str = "projects_db.json";
 // endregion
 
 // region -- Custom Errors
@@ -115,7 +117,12 @@ fn main() {
             eprintln!("Failed to load the config file using default settings");
             Config::default()
         },
-        Err(_) => todo!("Config Error Handling"),
+        Err(FileError::ParsingError) => {
+            eprintln!(
+                "The Config file failed to parse, please check for any errors in the file and re-run your command."
+            );
+            return;
+        },
     };
 
     let mut projects = match load_projects() {
@@ -123,7 +130,13 @@ fn main() {
         Err(FileError::LoadingError) => {
             vec![]
         },
-        Err(_) => todo!("Project Error Handling"),
+        Err(FileError::ParsingError) => {
+            eprintln!(
+                "The Projects Database file failed to parse, please check for any errors in the file and re-run your \
+                 command."
+            );
+            return;
+        },
     };
 
     match &cli.command {
@@ -178,7 +191,7 @@ fn main() {
 fn load_config() -> Result<Config> {
     let mut config_dir = dirs::config_dir().unwrap();
     config_dir.push(PROJECT_NAME);
-    config_dir.push("config.toml");
+    config_dir.push(CONFIG_FILENAME);
 
     let contents = match fs::read_to_string(config_dir) {
         Ok(c) => Ok(c),
@@ -194,7 +207,7 @@ fn load_config() -> Result<Config> {
 fn load_projects() -> Result<Vec<Project>> {
     let mut projects_dir = dirs::config_dir().unwrap();
     projects_dir.push(PROJECT_NAME);
-    projects_dir.push("projects.json");
+    projects_dir.push(PROJECT_DB_FILENAME);
 
     let contents = match fs::read_to_string(projects_dir) {
         Ok(c) => Ok(c),
@@ -214,7 +227,7 @@ fn save_config(config: Config) {
     // make sure path exists
     fs::create_dir_all(config_dir.clone()).unwrap();
 
-    config_dir.push("config.toml");
+    config_dir.push(CONFIG_FILENAME);
 
     // save config to config_dir
     let contents = toml::to_string(&config).unwrap();
@@ -228,7 +241,7 @@ fn save_projects(projects: Vec<Project>) {
     // make sure path exists
     fs::create_dir_all(projects_dir.clone()).unwrap();
 
-    projects_dir.push("projects.json");
+    projects_dir.push(PROJECT_DB_FILENAME);
 
     // save config to config_dir
     let contents = serde_json::to_string(&projects).unwrap();
