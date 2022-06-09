@@ -1,31 +1,18 @@
-# Project Manager
+# FPM - Frazzer's Project Manager
 
-A CLI app to create and manage projected
+A CLI app to create and manage projects
 
 ## Usage
 
-`project_manager.exe <COMMAND>`
+`fpm <COMMAND>`
 
 ### Commands:
 
-| Command | Description                    |
-|---------|--------------------------------|
-| Create  | Create a New project directory |
+| Command   | Description                                                                  |
+|-----------|------------------------------------------------------------------------------|
+| New       | Create a New project                                                         |
+| Add       | Add an Exiting Project                                                       |
+| Config    | Configuration Settings                                                       |
+| Project   | Project Options                                                              |
+| -h --help | See all the options for commands<br/>You can use this on any of the commands |
 
-## Create
-
-### Usage
-
-`project_manager create [OPTIONS] --language <LANGUAGE> <NAME>`
-
-| Option              | Description                                                 | Default          |
-|---------------------|:------------------------------------------------------------|------------------|
-| -b, --base-dir      | The base directory to place the project folders into        | Current Diectory |
-| -g, --git-repo      | Create a git repo for the project                           |                  |
-| -h, --help          | Print help information                                      |                  |
-| -l, --language      | The language that the project will use                      |                  |
-| -n, --template-name | Specify specific template, leave blank for default template | Language         |
-| -o, --open          | Open the folder when done                                   |                  |
-| -r, --readme        | Include a basic README.md file                              |                  |
-| -t, --template      | Whether to use the template for the language                |                  |
-| -V, --version       | Print version information                                   |                  |
