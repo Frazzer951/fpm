@@ -4,6 +4,7 @@ use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
 use file_handler::{Config, ConfigOptions, FileError, Project};
+use regex::Regex;
 
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 
@@ -67,6 +68,11 @@ enum Commands {
         #[clap(subcommand)]
         command: ConfigCommands,
     },
+    /// Project options
+    Project {
+        #[clap(subcommand)]
+        command: ProjectCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -81,6 +87,16 @@ enum ConfigCommands {
     },
     /// Initialize the config file with default options
     Init,
+}
+
+#[derive(Subcommand)]
+enum ProjectCommands {
+    /// List Out all known projects
+    List {
+        #[clap(short, long)]
+        /// A Regex filter used to filter names when displaying projects
+        filter: Option<Regex>,
+    },
 }
 // endregion
 
@@ -207,6 +223,15 @@ fn main() {
                 file_handler::save_config(config);
             },
             ConfigCommands::Init => file_handler::save_config(config),
+        },
+        Commands::Project { command } => match &command {
+            ProjectCommands::List { filter } => {
+                for project in projects {
+                    if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
+                        println!("{}", project.name);
+                    }
+                }
+            },
         },
     }
 }

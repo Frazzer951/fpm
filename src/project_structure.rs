@@ -9,13 +9,13 @@ use crate::PROJECT_NAME;
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct Folder {
-    pub name: String,
+    pub name:        String,
     #[serde(default)]
-    pub files: Vec<File>,
+    pub files:       Vec<File>,
     #[serde(default)]
     pub sub_folders: Vec<Folder>,
     #[serde(default)]
-    pub commands: Vec<String>,
+    pub commands:    Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
@@ -146,17 +146,17 @@ fn load_file(path: PathBuf) -> File {
     };
 
     File {
-        filename: path.file_name().unwrap().to_str().unwrap().to_string(),
+        filename:      path.file_name().unwrap().to_str().unwrap().to_string(),
         lines_of_file: vec![contents],
     }
 }
 
 fn load_folder(path: PathBuf) -> Folder {
     let mut folder = Folder {
-        name: path.file_name().unwrap().to_str().unwrap().to_string(),
-        files: vec![],
+        name:        path.file_name().unwrap().to_str().unwrap().to_string(),
+        files:       vec![],
         sub_folders: vec![],
-        commands: vec![],
+        commands:    vec![],
     };
 
     // walk the directory at path
