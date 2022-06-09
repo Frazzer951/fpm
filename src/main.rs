@@ -2,9 +2,10 @@ use std::fs;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
+
 use file_handler::{Config, ConfigOptions, FileError, Project};
 
-use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
+use crate::project_structure::{build_folder, Folder, load_template, TemplateVars};
 
 mod file_handler;
 mod project_structure;
@@ -33,17 +34,17 @@ enum Commands {
         name:      String,
         #[clap(short = 't', long = "type", value_name = "TYPE")]
         /// Project Type - This determines the folder the project will placed into
-        p_type:    Option<String>,
+        p_type: Option<String>,
         #[clap(short, long)]
         /// Project Category - Another layer of separation, similar to project type, that will help to get project
         /// seperated. Examples would be `Work`, `Personal` and so on
-        category:  Option<String>,
+        category: Option<String>,
         #[clap(short, long)]
         /// Manually specify the base directory to use. -- Overrides base_dir specified in config
         directory: Option<String>,
-        #[clap(long)]
+        #[clap(long, alias = "t")]
         /// A Template to use when generating a project
-        template:  Option<String>,
+        templates: Vec<String>,
     },
     /// Configuration Settings
     Config {
@@ -104,7 +105,7 @@ fn main() {
             p_type,
             category,
             directory,
-            template,
+            templates,
         } => {
             if config.base_dir.is_none() && directory.is_none() {
                 eprintln!("No directory was specified, and the global Base Directory is not Set.");
@@ -122,17 +123,15 @@ fn main() {
             project_path.push(name);
 
             let mut project = Folder {
-                name:        name.clone(),
-                files:       vec![],
+                name: name.clone(),
+                files: vec![],
                 sub_folders: vec![],
-                commands:    vec![],
+                commands: vec![],
             };
 
-            if template.is_some() {
-                load_template(&mut project, template.as_ref().unwrap().clone());
+            for template in templates {
+                load_template(&mut project, template.clone());
             }
-
-            // println!("{:#?}", project);
 
             // create project folders
             fs::create_dir_all(project_path.clone()).unwrap();
