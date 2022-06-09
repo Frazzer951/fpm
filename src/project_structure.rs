@@ -1,7 +1,7 @@
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::{Command, exit};
+use std::process::{exit, Command};
 
 use serde::{Deserialize, Serialize};
 
@@ -15,7 +15,7 @@ pub struct Folder {
     #[serde(default)]
     pub sub_folders: Vec<Folder>,
     #[serde(default)]
-    pub commands:    Vec<String>,
+    pub commands: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]

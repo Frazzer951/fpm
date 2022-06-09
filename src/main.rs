@@ -2,10 +2,9 @@ use std::fs;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
-
 use file_handler::{Config, ConfigOptions, FileError, Project};
 
-use crate::project_structure::{build_folder, Folder, load_template, TemplateVars};
+use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 
 mod file_handler;
 mod project_structure;
@@ -31,7 +30,7 @@ enum Commands {
     New {
         #[clap(short, long)]
         /// Project Name
-        name:      String,
+        name: String,
         #[clap(short = 't', long = "type", value_name = "TYPE")]
         /// Project Type - This determines the folder the project will placed into
         p_type: Option<String>,
