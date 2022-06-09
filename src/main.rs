@@ -1,4 +1,5 @@
 use std::fs;
+use std::process::exit;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
@@ -30,20 +31,36 @@ enum Commands {
     New {
         #[clap(short, long)]
         /// Project Name
-        name: String,
+        name:      String,
         #[clap(short = 't', long = "type", value_name = "TYPE")]
         /// Project Type - This determines the folder the project will placed into
-        p_type: Option<String>,
+        p_type:    Option<String>,
         #[clap(short, long)]
         /// Project Category - Another layer of separation, similar to project type, that will help to get project
         /// seperated. Examples would be `Work`, `Personal` and so on
-        category: Option<String>,
+        category:  Option<String>,
         #[clap(short, long)]
         /// Manually specify the base directory to use. -- Overrides base_dir specified in config
         directory: Option<String>,
         #[clap(long, visible_alias = "t")]
         /// A Template to use when generating a project
         templates: Vec<String>,
+    },
+    /// Add an existing project
+    Add {
+        #[clap(short, long)]
+        /// Project Name
+        name:      String,
+        /// The Directory of the project
+        #[clap(short, long)]
+        directory: String,
+        #[clap(short = 't', long = "type", value_name = "TYPE")]
+        /// Project Type - This determines the folder the project will placed into
+        p_type:    Option<String>,
+        #[clap(short, long)]
+        /// Project Category - Another layer of separation, similar to project type, that will help to get project
+        /// seperated. Examples would be `Work`, `Personal` and so on
+        category:  Option<String>,
     },
     /// Configuration Settings
     Config {
@@ -80,7 +97,7 @@ fn main() {
             eprintln!(
                 "The Config file failed to parse, please check for any errors in the file and re-run your command."
             );
-            return;
+            exit(1);
         },
     };
 
@@ -94,7 +111,7 @@ fn main() {
                 "The Projects Database file failed to parse, please check for any errors in the file and re-run your \
                  command."
             );
-            return;
+            exit(1);
         },
     };
 
@@ -122,10 +139,10 @@ fn main() {
             project_path.push(name);
 
             let mut project = Folder {
-                name: name.clone(),
-                files: vec![],
+                name:        name.clone(),
+                files:       vec![],
                 sub_folders: vec![],
-                commands: vec![],
+                commands:    vec![],
             };
 
             for template in templates {
@@ -153,6 +170,27 @@ fn main() {
             projects.push(Project {
                 name:      name.clone(),
                 directory: String::from(project_path.to_str().unwrap()),
+                category:  category.clone(),
+                p_type:    p_type.clone(),
+            });
+            file_handler::save_projects(projects);
+        },
+        Commands::Add {
+            name,
+            directory,
+            p_type,
+            category,
+        } => {
+            // is there a folder at directory?
+            if !std::path::Path::new(directory).exists() {
+                eprintln!("The directory `{}` specified does not exist", directory);
+                exit(1);
+            }
+
+            // add project to known projects
+            projects.push(Project {
+                name:      name.clone(),
+                directory: directory.clone(),
                 category:  category.clone(),
                 p_type:    p_type.clone(),
             });
