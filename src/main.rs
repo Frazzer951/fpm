@@ -41,7 +41,7 @@ enum Commands {
         #[clap(short, long)]
         /// Manually specify the base directory to use. -- Overrides base_dir specified in config
         directory: Option<String>,
-        #[clap(long, alias = "t")]
+        #[clap(long, visible_alias = "t")]
         /// A Template to use when generating a project
         templates: Vec<String>,
     },
