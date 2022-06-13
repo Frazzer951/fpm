@@ -6,6 +6,13 @@ A CLI app to create and manage projects
 
 `fpm <COMMAND>`
 
+### Set Config Directory
+
+By Default the config and other files will be stored in your operating system's config directory.<br>
+Linux: `~/.config/fpm/`<br>
+Windows: `AppData\Roaming\fpm\`<br>
+To use a different directory set the Environment Variable `FPM_CONFIG_DIR` to the directory you would like to use.
+
 ### Commands:
 
 | Command   | Description                                                                  |
