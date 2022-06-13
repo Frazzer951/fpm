@@ -1,10 +1,9 @@
 use std::{fmt, fs};
 
-use clap::ArgEnum;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::{CONFIG_FILENAME, PROJECT_DB_FILENAME, PROJECT_NAME};
+use crate::{PROJECT_DB_FILENAME, PROJECT_NAME};
 
 // region -- Custom Errors
 type Result<T> = std::result::Result<T, FileError>;
@@ -29,19 +28,6 @@ impl fmt::Display for FileError {
 }
 // endregion
 
-// region -- Config Struct
-#[derive(Deserialize, Serialize, Default, Debug)]
-pub struct Config {
-    #[serde(default)]
-    pub base_dir: Option<String>,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-pub enum ConfigOptions {
-    BaseDir,
-}
-// endregion
-
 // region -- Project Struct
 #[derive(Deserialize, Serialize, Default, Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Project {
@@ -53,22 +39,6 @@ pub struct Project {
     pub p_type:    Option<String>,
 }
 // endregion
-
-pub fn load_config() -> Result<Config> {
-    let mut config_dir = dirs::config_dir().unwrap();
-    config_dir.push(PROJECT_NAME);
-    config_dir.push(CONFIG_FILENAME);
-
-    let contents = match fs::read_to_string(config_dir) {
-        Ok(c) => Ok(c),
-        Err(_) => Err(FileError::LoadingError),
-    }?;
-
-    match toml::from_str(&contents) {
-        Ok(d) => Ok(d),
-        Err(_) => Err(FileError::ParsingError),
-    }
-}
 
 pub fn load_projects() -> Result<Vec<Project>> {
     let mut projects_dir = dirs::config_dir().unwrap();
@@ -84,20 +54,6 @@ pub fn load_projects() -> Result<Vec<Project>> {
         Ok(d) => Ok(d),
         Err(_) => Err(FileError::ParsingError),
     }
-}
-
-pub fn save_config(config: Config) {
-    let mut config_dir = dirs::config_dir().unwrap();
-    config_dir.push(PROJECT_NAME);
-
-    // make sure path exists
-    fs::create_dir_all(config_dir.clone()).unwrap();
-
-    config_dir.push(CONFIG_FILENAME);
-
-    // save config to config_dir
-    let contents = toml::to_string(&config).unwrap();
-    fs::write(config_dir, contents).unwrap();
 }
 
 pub fn save_projects(projects: Vec<Project>) {

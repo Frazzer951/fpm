@@ -3,18 +3,21 @@ use std::process::exit;
 use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
-use file_handler::{Config, ConfigOptions, FileError, Project};
 use regex::Regex;
 
+use crate::file_handler::{FileError, Project};
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
+use crate::settings::{ConfigOptions, Settings};
 
 mod file_handler;
 mod project_structure;
+mod settings;
 
 // region -- Project Constants
 const PROJECT_NAME: &str = "fpm";
 const CONFIG_FILENAME: &str = "config.toml";
 const PROJECT_DB_FILENAME: &str = "projects_db.json";
+const PROJECT_ENV_PREFIX: &str = "FPM";
 // endregion
 
 // region -- CLI Structs
@@ -103,17 +106,11 @@ enum ProjectCommands {
 fn main() {
     let cli = Cli::parse();
 
-    let mut config = match file_handler::load_config() {
-        Ok(c) => c,
-        Err(FileError::LoadingError) => {
-            eprintln!("Failed to load the config file using default settings");
-            Config::default()
-        },
-        Err(FileError::ParsingError) => {
-            eprintln!(
-                "The Config file failed to parse, please check for any errors in the file and re-run your command."
-            );
-            exit(1);
+    let mut settings = match Settings::new() {
+        Ok(s) => s,
+        Err(err) => {
+            eprintln!("Config failed to load: {}", err);
+            exit(1)
         },
     };
 
@@ -139,12 +136,14 @@ fn main() {
             directory,
             templates,
         } => {
-            if config.base_dir.is_none() && directory.is_none() {
+            if settings.base_dir.is_none() && directory.is_none() {
                 eprintln!("No directory was specified, and the global Base Directory is not Set.");
                 eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
                 return;
             }
-            let dir = directory.as_ref().unwrap_or_else(|| config.base_dir.as_ref().unwrap());
+            let dir = directory
+                .as_ref()
+                .unwrap_or_else(|| settings.base_dir.as_ref().unwrap());
             let mut project_path = std::path::PathBuf::from_str(dir).unwrap();
             if category.is_some() {
                 project_path.push(category.as_ref().unwrap());
@@ -216,13 +215,13 @@ fn main() {
             ConfigCommands::Set { setting, value } => {
                 match &setting {
                     ConfigOptions::BaseDir => {
-                        config.base_dir = Some(value.clone());
+                        settings.base_dir = Some(value.clone());
                     },
                 }
 
-                file_handler::save_config(config);
+                settings.save();
             },
-            ConfigCommands::Init => file_handler::save_config(config),
+            ConfigCommands::Init => settings.save(),
         },
         Commands::Project { command } => match &command {
             ProjectCommands::List { filter } => {
