@@ -10,6 +10,7 @@ use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
 pub enum ConfigOptions {
     BaseDir,
+    TemplateDir,
 }
 
 #[derive(Deserialize, Serialize, Default, Debug)]
@@ -41,7 +42,6 @@ impl Settings {
     }
 
     pub fn save(&self) {
-        println!("{:#?}", self);
         let config_path = PathBuf::from(self.config_dir.clone());
 
         // make sure path exists

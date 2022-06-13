@@ -217,6 +217,9 @@ fn main() {
                     ConfigOptions::BaseDir => {
                         settings.base_dir = Some(value.clone());
                     },
+                    ConfigOptions::TemplateDir => {
+                        settings.template_dir = Some(value.clone());
+                    },
                 }
 
                 settings.save();
