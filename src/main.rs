@@ -184,7 +184,7 @@ fn config_handler(settings: &mut Settings, command: &&ConfigCommands) {
 }
 
 fn add_project(
-    mut projects: &mut Vec<Project>,
+    projects: &mut Vec<Project>,
     name: &String,
     directory: &String,
     p_type: &Option<String>,
@@ -208,7 +208,7 @@ fn add_project(
 
 fn new_project(
     mut settings: &mut Settings,
-    mut projects: &mut Vec<Project>,
+    projects: &mut Vec<Project>,
     name: &String,
     p_type: &Option<String>,
     category: &Option<String>,
