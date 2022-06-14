@@ -8,7 +8,7 @@ readme = "README.md"
 repository = "https://github.com/Frazzer951/fpm"
 
 [dependencies]
-clap = { version = "3.1.10", features = ["derive"] }
+clap = { version = "3.2.1", features = ["derive"] }
 config = "0.13.1"
 dirs = "4.0.0"
 itertools = "0.10.3"
