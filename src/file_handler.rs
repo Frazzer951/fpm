@@ -66,7 +66,7 @@ pub fn save_projects(projects: &mut Vec<Project>) {
     projects_dir.push(PROJECT_DB_FILENAME);
 
     // remove duplicates
-    let projects: Vec<Project> = projects.into_iter().unique().collect();
+    let projects: Vec<Project> = projects.clone().into_iter().unique().collect();
 
     // save config to config_dir
     let contents = serde_json::to_string(&projects).unwrap();
