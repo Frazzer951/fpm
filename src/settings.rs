@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::{env, fs};
 
 use clap::ArgEnum;
-use config::{Config, ConfigError, Environment, File};
+use config::{Config, Environment, File};
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
@@ -24,7 +24,7 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn new() -> Result<Self, ConfigError> {
+    pub fn new() -> Self {
         let config_dir = env::var(format!("{}_CONFIG_DIR", PROJECT_ENV_PREFIX)).unwrap_or_else(|_| {
             let mut config_dir = dirs::config_dir().unwrap();
             config_dir.push(PROJECT_NAME);
@@ -35,10 +35,12 @@ impl Settings {
         let s = Config::builder()
             .add_source(File::with_name(config_dir.as_str()))
             .add_source(Environment::with_prefix(PROJECT_ENV_PREFIX))
-            .set_override("config_dir", config_dir)?
-            .build()?;
+            .set_override("config_dir", config_dir)
+            .expect("Failed to set config_dir")
+            .build()
+            .expect("Failed to load and parse config file");
 
-        s.try_deserialize()
+        s.try_deserialize().expect("Failed to Deserialize config file")
     }
 
     pub fn save(&self) {

@@ -5,7 +5,7 @@ use std::process::{exit, Command};
 
 use serde::{Deserialize, Serialize};
 
-use crate::PROJECT_NAME;
+use crate::{Settings, PROJECT_NAME};
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct Folder {
@@ -40,10 +40,8 @@ pub struct TemplateVars {
     pub project_name: String,
 }
 
-pub fn load_template(project: &mut Folder, mut template_name: String) {
-    let mut template_dir = dirs::config_dir().unwrap();
-    template_dir.push(PROJECT_NAME);
-    template_dir.push("templates");
+pub fn load_template(settings: &Settings, project: &mut Folder, mut template_name: String) {
+    let mut template_dir = PathBuf::from(settings.template_dir.clone().unwrap());
 
     // make sure path exists
     fs::create_dir_all(template_dir.clone()).unwrap();

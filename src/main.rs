@@ -1,6 +1,6 @@
 use std::fs;
+use std::path::PathBuf;
 use std::process::exit;
-use std::str::FromStr;
 
 use clap::{Parser, Subcommand};
 use regex::Regex;
@@ -106,13 +106,7 @@ enum ProjectCommands {
 fn main() {
     let cli = Cli::parse();
 
-    let mut settings = match Settings::new() {
-        Ok(s) => s,
-        Err(err) => {
-            eprintln!("Config failed to load: {}", err);
-            exit(1)
-        },
-    };
+    let mut settings = Settings::new();
 
     let mut projects = match file_handler::load_projects() {
         Ok(p) => p,
@@ -144,7 +138,7 @@ fn main() {
             let dir = directory
                 .as_ref()
                 .unwrap_or_else(|| settings.base_dir.as_ref().unwrap());
-            let mut project_path = std::path::PathBuf::from_str(dir).unwrap();
+            let mut project_path = std::path::PathBuf::from(dir);
             if category.is_some() {
                 project_path.push(category.as_ref().unwrap());
             }
@@ -160,8 +154,14 @@ fn main() {
                 commands:    vec![],
             };
 
+            if settings.template_dir.is_none() {
+                let mut template_path = PathBuf::from(dir);
+                template_path.push("templates");
+                settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
+            }
+
             for template in templates {
-                load_template(&mut project, template.clone());
+                load_template(&settings, &mut project, template.clone());
             }
 
             // create project folders
