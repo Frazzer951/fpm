@@ -130,15 +130,7 @@ fn main() {
             directory,
             templates,
         } => {
-            new_project(
-                &mut settings,
-                &mut projects,
-                name,
-                p_type,
-                category,
-                directory,
-                templates,
-            );
+            new_project(&mut settings, projects, name, p_type, category, directory, templates);
         },
         Commands::Add {
             name,
@@ -146,7 +138,7 @@ fn main() {
             p_type,
             category,
         } => {
-            add_project(&mut projects, name, directory, p_type, category);
+            add_project(projects, name, directory, p_type, category);
         },
         Commands::Config { command } => config_handler(&mut settings, &command),
         Commands::Project { command } => project_handler(&mut projects, &command),
@@ -184,8 +176,8 @@ fn config_handler(settings: &mut Settings, command: &&ConfigCommands) {
 }
 
 fn add_project(
-    projects: &mut Vec<Project>,
-    name: &String,
+    mut projects: Vec<Project>,
+    name: &str,
     directory: &String,
     p_type: &Option<String>,
     category: &Option<String>,
@@ -198,7 +190,7 @@ fn add_project(
 
     // add project to known projects
     projects.push(Project {
-        name:      name.clone(),
+        name:      name.to_string(),
         directory: directory.clone(),
         category:  category.clone(),
         p_type:    p_type.clone(),
@@ -208,7 +200,7 @@ fn add_project(
 
 fn new_project(
     mut settings: &mut Settings,
-    projects: &mut Vec<Project>,
+    mut projects: Vec<Project>,
     name: &String,
     p_type: &Option<String>,
     category: &Option<String>,
@@ -246,7 +238,7 @@ fn new_project(
     }
 
     for template in templates {
-        load_template(&settings, &mut project, template.clone());
+        load_template(settings, &mut project, template.clone());
     }
 
     // create project folders

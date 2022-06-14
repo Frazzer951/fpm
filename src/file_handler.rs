@@ -56,7 +56,7 @@ pub fn load_projects() -> Result<Vec<Project>> {
     }
 }
 
-pub fn save_projects(projects: &mut Vec<Project>) {
+pub fn save_projects(projects: Vec<Project>) {
     let mut projects_dir = dirs::config_dir().unwrap();
     projects_dir.push(PROJECT_NAME);
 
@@ -66,7 +66,7 @@ pub fn save_projects(projects: &mut Vec<Project>) {
     projects_dir.push(PROJECT_DB_FILENAME);
 
     // remove duplicates
-    let projects: Vec<Project> = projects.clone().into_iter().unique().collect();
+    let projects: Vec<Project> = projects.into_iter().unique().collect();
 
     // save config to config_dir
     let contents = serde_json::to_string(&projects).unwrap();
