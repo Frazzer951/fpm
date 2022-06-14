@@ -130,65 +130,15 @@ fn main() {
             directory,
             templates,
         } => {
-            if settings.base_dir.is_none() && directory.is_none() {
-                eprintln!("No directory was specified, and the global Base Directory is not Set.");
-                eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
-                return;
-            }
-            let dir = directory
-                .as_ref()
-                .unwrap_or_else(|| settings.base_dir.as_ref().unwrap());
-            let mut project_path = std::path::PathBuf::from(dir);
-            if category.is_some() {
-                project_path.push(category.as_ref().unwrap());
-            }
-            if p_type.is_some() {
-                project_path.push(p_type.as_ref().unwrap());
-            }
-            project_path.push(name);
-
-            let mut project = Folder {
-                name:        name.clone(),
-                files:       vec![],
-                sub_folders: vec![],
-                commands:    vec![],
-            };
-
-            if settings.template_dir.is_none() {
-                let mut template_path = PathBuf::from(dir);
-                template_path.push("templates");
-                settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
-            }
-
-            for template in templates {
-                load_template(&settings, &mut project, template.clone());
-            }
-
-            // create project folders
-            fs::create_dir_all(project_path.clone()).unwrap();
-
-            // if the folder at project_path isn't empty throw an error
-            if fs::read_dir(project_path.clone()).unwrap().count() > 0 {
-                eprintln!("The directory specified already exists and is not empty");
-                eprintln!("{:#?}", project_path);
-                return;
-            }
-
-            let template_vars = TemplateVars {
-                project_name: name.clone(),
-            };
-
-            // build the project
-            build_folder(project_path.clone(), &project, &template_vars);
-
-            // add project to known projects
-            projects.push(Project {
-                name:      name.clone(),
-                directory: String::from(project_path.to_str().unwrap()),
-                category:  category.clone(),
-                p_type:    p_type.clone(),
-            });
-            file_handler::save_projects(projects);
+            new_project(
+                &mut settings,
+                &mut projects,
+                name,
+                p_type,
+                category,
+                directory,
+                templates,
+            );
         },
         Commands::Add {
             name,
@@ -196,44 +146,132 @@ fn main() {
             p_type,
             category,
         } => {
-            // is there a folder at directory?
-            if !std::path::Path::new(directory).exists() {
-                eprintln!("The directory `{}` specified does not exist", directory);
-                exit(1);
+            add_project(&mut projects, name, directory, p_type, category);
+        },
+        Commands::Config { command } => config_handler(&mut settings, &command),
+        Commands::Project { command } => project_handler(&mut projects, &command),
+    }
+}
+
+fn project_handler(projects: &mut Vec<Project>, command: &&ProjectCommands) {
+    match &command {
+        ProjectCommands::List { filter } => {
+            for project in projects {
+                if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
+                    println!("{}", project.name);
+                }
             }
-
-            // add project to known projects
-            projects.push(Project {
-                name:      name.clone(),
-                directory: directory.clone(),
-                category:  category.clone(),
-                p_type:    p_type.clone(),
-            });
-            file_handler::save_projects(projects);
-        },
-        Commands::Config { command } => match &command {
-            ConfigCommands::Set { setting, value } => {
-                match &setting {
-                    ConfigOptions::BaseDir => {
-                        settings.base_dir = Some(value.clone());
-                    },
-                    ConfigOptions::TemplateDir => {
-                        settings.template_dir = Some(value.clone());
-                    },
-                }
-
-                settings.save();
-            },
-            ConfigCommands::Init => settings.save(),
-        },
-        Commands::Project { command } => match &command {
-            ProjectCommands::List { filter } => {
-                for project in projects {
-                    if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
-                        println!("{}", project.name);
-                    }
-                }
-            },
         },
     }
+}
+
+fn config_handler(settings: &mut Settings, command: &&ConfigCommands) {
+    match &command {
+        ConfigCommands::Set { setting, value } => {
+            match &setting {
+                ConfigOptions::BaseDir => {
+                    settings.base_dir = Some(value.clone());
+                },
+                ConfigOptions::TemplateDir => {
+                    settings.template_dir = Some(value.clone());
+                },
+            }
+
+            settings.save();
+        },
+        ConfigCommands::Init => settings.save(),
+    }
+}
+
+fn add_project(
+    mut projects: &mut Vec<Project>,
+    name: &String,
+    directory: &String,
+    p_type: &Option<String>,
+    category: &Option<String>,
+) {
+    // is there a folder at directory?
+    if !std::path::Path::new(directory).exists() {
+        eprintln!("The directory `{}` specified does not exist", directory);
+        exit(1);
+    }
+
+    // add project to known projects
+    projects.push(Project {
+        name:      name.clone(),
+        directory: directory.clone(),
+        category:  category.clone(),
+        p_type:    p_type.clone(),
+    });
+    file_handler::save_projects(projects);
+}
+
+fn new_project(
+    mut settings: &mut Settings,
+    mut projects: &mut Vec<Project>,
+    name: &String,
+    p_type: &Option<String>,
+    category: &Option<String>,
+    directory: &Option<String>,
+    templates: &Vec<String>,
+) {
+    if settings.base_dir.is_none() && directory.is_none() {
+        eprintln!("No directory was specified, and the global Base Directory is not Set.");
+        eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
+        return;
+    }
+    let dir = directory
+        .as_ref()
+        .unwrap_or_else(|| settings.base_dir.as_ref().unwrap());
+    let mut project_path = std::path::PathBuf::from(dir);
+    if category.is_some() {
+        project_path.push(category.as_ref().unwrap());
+    }
+    if p_type.is_some() {
+        project_path.push(p_type.as_ref().unwrap());
+    }
+    project_path.push(name);
+
+    let mut project = Folder {
+        name:        name.clone(),
+        files:       vec![],
+        sub_folders: vec![],
+        commands:    vec![],
+    };
+
+    if settings.template_dir.is_none() {
+        let mut template_path = PathBuf::from(dir);
+        template_path.push("templates");
+        settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
+    }
+
+    for template in templates {
+        load_template(&settings, &mut project, template.clone());
+    }
+
+    // create project folders
+    fs::create_dir_all(project_path.clone()).unwrap();
+
+    // if the folder at project_path isn't empty throw an error
+    if fs::read_dir(project_path.clone()).unwrap().count() > 0 {
+        eprintln!("The directory specified already exists and is not empty");
+        eprintln!("{:#?}", project_path);
+        return;
+    }
+
+    let template_vars = TemplateVars {
+        project_name: name.clone(),
+    };
+
+    // build the project
+    build_folder(project_path.clone(), &project, &template_vars);
+
+    // add project to known projects
+    projects.push(Project {
+        name:      name.clone(),
+        directory: String::from(project_path.to_str().unwrap()),
+        category:  category.clone(),
+        p_type:    p_type.clone(),
+    });
+    file_handler::save_projects(projects);
 }

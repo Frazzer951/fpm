@@ -56,7 +56,7 @@ pub fn load_projects() -> Result<Vec<Project>> {
     }
 }
 
-pub fn save_projects(projects: Vec<Project>) {
+pub fn save_projects(projects: &mut Vec<Project>) {
     let mut projects_dir = dirs::config_dir().unwrap();
     projects_dir.push(PROJECT_NAME);
 
