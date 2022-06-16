@@ -12,9 +12,13 @@ pub struct Settings {
     pub base_dir:     Option<String>,
     #[serde(default)]
     pub template_dir: Option<String>,
+    #[serde(default = "default_git_command")]
+    pub git_command:  String,
     #[serde(skip_serializing)]
     config_dir:       String,
 }
+
+fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }
 
 impl Settings {
     pub fn new() -> Self {
