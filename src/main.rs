@@ -28,64 +28,70 @@ fn cli() -> Command<'static> {
             Command::new("new")
                 .about("Create a New project")
                 .arg_required_else_help(true)
-                .args(&[
-                    Arg::new("name")
-                        .required(true)
-                        .short('n')
-                        .long("name")
-                        .takes_value(true)
-                        .help("Project Name"),
-                    Arg::new("type")
-                        .short('t')
-                        .long("type")
-                        .takes_value(true)
-                        .help("Project Type - This determines the folder the project will placed into"),
-                    Arg::new("category").short('c').long("category").takes_value(true).help(
-                        "Project Category - Another layer of separation, similar to project type, that will help to \
-                         get project seperated. Examples would be `Work`, `Personal` and so on",
-                    ),
-                    Arg::new("directory")
-                        .short('d')
-                        .long("directory")
-                        .takes_value(true)
-                        .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
-                    Arg::new("template")
-                        .long("template")
-                        .visible_alias("t")
-                        .takes_value(true)
-                        .multiple_values(true)
-                        .action(ArgAction::Append)
-                        .help("Templates to use when generating a project i.e. `--t template1 template2`"),
-                ]),
+                .args(
+                    &[
+                        Arg::new("name")
+                            .required(true)
+                            .short('n')
+                            .long("name")
+                            .takes_value(true)
+                            .help("Project Name"),
+                        Arg::new("type")
+                            .short('t')
+                            .long("type")
+                            .takes_value(true)
+                            .help("Project Type - This determines the folder the project will placed into"),
+                        Arg::new("category").short('c').long("category").takes_value(true).help(
+                            "Project Category - Another layer of separation, similar to project type, that will help \
+                             to get project seperated. Examples would be `Work`, `Personal` and so on",
+                        ),
+                        Arg::new("directory")
+                            .short('d')
+                            .long("directory")
+                            .takes_value(true)
+                            .help(
+                                "Manually specify the base directory to use. -- Overrides base_dir specified in config",
+                            ),
+                        Arg::new("template")
+                            .long("template")
+                            .visible_alias("t")
+                            .takes_value(true)
+                            .multiple_values(true)
+                            .action(ArgAction::Append)
+                            .help("Templates to use when generating a project i.e. `--t template1 template2`"),
+                    ],
+                ),
         )
         .subcommand(
             Command::new("add")
                 .about("Add an existing project")
                 .arg_required_else_help(true)
-                .args(&[
-                    Arg::new("name")
-                        .required(true)
-                        .short('n')
-                        .long("name")
-                        .takes_value(true)
-                        .help("Project Name"),
-                    Arg::new("directory")
-                        .required(true)
-                        .short('d')
-                        .long("directory")
-                        .takes_value(true)
-                        .help("Directory of the project"),
-                    Arg::new("type")
-                        .short('t')
-                        .long("type")
-                        .takes_value(true)
-                        .help("Project Type"),
-                    Arg::new("category")
-                        .short('c')
-                        .long("category")
-                        .takes_value(true)
-                        .help("Project Category"),
-                ]),
+                .args(
+                    &[
+                        Arg::new("name")
+                            .required(true)
+                            .short('n')
+                            .long("name")
+                            .takes_value(true)
+                            .help("Project Name"),
+                        Arg::new("directory")
+                            .required(true)
+                            .short('d')
+                            .long("directory")
+                            .takes_value(true)
+                            .help("Directory of the project"),
+                        Arg::new("type")
+                            .short('t')
+                            .long("type")
+                            .takes_value(true)
+                            .help("Project Type"),
+                        Arg::new("category")
+                            .short('c')
+                            .long("category")
+                            .takes_value(true)
+                            .help("Project Category"),
+                    ],
+                ),
         )
         .subcommand(
             Command::new("config")
@@ -96,14 +102,16 @@ fn cli() -> Command<'static> {
                     Command::new("set")
                         .about("Set the value of a config option")
                         .arg_required_else_help(true)
-                        .args(&[
-                            Arg::new("setting")
-                                .required(true)
-                                .takes_value(true)
-                                .value_parser(["base_dir", "template_dir"])
-                                .help("The setting to modify"),
-                            Arg::new("value").required(true).help("The modified value"),
-                        ]),
+                        .args(
+                            &[
+                                Arg::new("setting")
+                                    .required(true)
+                                    .takes_value(true)
+                                    .value_parser(["base_dir", "template_dir"])
+                                    .help("The setting to modify"),
+                                Arg::new("value").required(true).help("The modified value"),
+                            ],
+                        ),
                 )
                 .subcommand(Command::new("init").about("Initialize the config file with default options")),
         )
