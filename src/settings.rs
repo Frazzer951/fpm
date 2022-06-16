@@ -1,17 +1,10 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
-use clap::ArgEnum;
 use config::{Config, Environment, File};
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-pub enum ConfigOptions {
-    BaseDir,
-    TemplateDir,
-}
 
 #[derive(Deserialize, Serialize, Default, Debug)]
 pub struct Settings {

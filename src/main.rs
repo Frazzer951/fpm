@@ -2,12 +2,12 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::exit;
 
-use clap::{Parser, Subcommand};
+use clap::{command, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
 
 use crate::file_handler::{FileError, Project};
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
-use crate::settings::{ConfigOptions, Settings};
+use crate::settings::Settings;
 
 mod file_handler;
 mod project_structure;
@@ -20,91 +20,113 @@ const PROJECT_DB_FILENAME: &str = "projects_db.json";
 const PROJECT_ENV_PREFIX: &str = "FPM";
 // endregion
 
-// region -- CLI Structs
-#[derive(Parser)]
-#[clap(version, about, long_about = None)]
-#[clap(propagate_version = true)]
-struct Cli {
-    #[clap(subcommand)]
-    command: Commands,
+fn cli() -> Command<'static> {
+    command!()
+        .subcommand_required(true)
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("new")
+                .about("Create a New project")
+                .arg_required_else_help(true)
+                .args(&[
+                    Arg::new("name")
+                        .required(true)
+                        .short('n')
+                        .long("name")
+                        .takes_value(true)
+                        .help("Project Name"),
+                    Arg::new("type")
+                        .short('t')
+                        .long("type")
+                        .takes_value(true)
+                        .help("Project Type - This determines the folder the project will placed into"),
+                    Arg::new("category").short('c').long("category").takes_value(true).help(
+                        "Project Category - Another layer of separation, similar to project type, that will help to \
+                         get project seperated. Examples would be `Work`, `Personal` and so on",
+                    ),
+                    Arg::new("directory")
+                        .short('d')
+                        .long("directory")
+                        .takes_value(true)
+                        .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
+                    Arg::new("template")
+                        .long("template")
+                        .visible_alias("t")
+                        .takes_value(true)
+                        .multiple_values(true)
+                        .action(ArgAction::Append)
+                        .help("Templates to use when generating a project i.e. `--t template1 template2`"),
+                ]),
+        )
+        .subcommand(
+            Command::new("add")
+                .about("Add an existing project")
+                .arg_required_else_help(true)
+                .args(&[
+                    Arg::new("name")
+                        .required(true)
+                        .short('n')
+                        .long("name")
+                        .takes_value(true)
+                        .help("Project Name"),
+                    Arg::new("directory")
+                        .required(true)
+                        .short('d')
+                        .long("directory")
+                        .takes_value(true)
+                        .help("Directory of the project"),
+                    Arg::new("type")
+                        .short('t')
+                        .long("type")
+                        .takes_value(true)
+                        .help("Project Type"),
+                    Arg::new("category")
+                        .short('c')
+                        .long("category")
+                        .takes_value(true)
+                        .help("Project Category"),
+                ]),
+        )
+        .subcommand(
+            Command::new("config")
+                .about("Configuration Settings")
+                .subcommand_required(true)
+                .arg_required_else_help(true)
+                .subcommand(
+                    Command::new("set")
+                        .about("Set the value of a config option")
+                        .arg_required_else_help(true)
+                        .args(&[
+                            Arg::new("setting")
+                                .required(true)
+                                .takes_value(true)
+                                .value_parser(["base_dir", "template_dir"])
+                                .help("The setting to modify"),
+                            Arg::new("value").required(true).help("The modified value"),
+                        ]),
+                )
+                .subcommand(Command::new("init").about("Initialize the config file with default options")),
+        )
+        .subcommand(
+            Command::new("project")
+                .about("Project options")
+                .subcommand_required(true)
+                .arg_required_else_help(true)
+                .subcommand(
+                    Command::new("list").about("List out all known projects").arg(
+                        Arg::new("filter")
+                            .short('f')
+                            .long("filter")
+                            .takes_value(true)
+                            .value_parser(clap::value_parser!(Regex))
+                            .help("A regex filter used to filter names when displaying projects"),
+                    ),
+                ),
+        )
 }
-
-#[derive(Subcommand)]
-enum Commands {
-    /// Create a New project
-    New {
-        #[clap(short, long)]
-        /// Project Name
-        name:      String,
-        #[clap(short = 't', long = "type", value_name = "TYPE")]
-        /// Project Type - This determines the folder the project will placed into
-        p_type:    Option<String>,
-        #[clap(short, long)]
-        /// Project Category - Another layer of separation, similar to project type, that will help to get project
-        /// seperated. Examples would be `Work`, `Personal` and so on
-        category:  Option<String>,
-        #[clap(short, long)]
-        /// Manually specify the base directory to use. -- Overrides base_dir specified in config
-        directory: Option<String>,
-        #[clap(long, visible_alias = "t")]
-        /// A Template to use when generating a project
-        templates: Vec<String>,
-    },
-    /// Add an existing project
-    Add {
-        #[clap(short, long)]
-        /// Project Name
-        name:      String,
-        /// The Directory of the project
-        #[clap(short, long)]
-        directory: String,
-        #[clap(short = 't', long = "type", value_name = "TYPE")]
-        /// Project Type - This determines the folder the project will placed into
-        p_type:    Option<String>,
-        #[clap(short, long)]
-        /// Project Category - Another layer of separation, similar to project type, that will help to get project
-        /// seperated. Examples would be `Work`, `Personal` and so on
-        category:  Option<String>,
-    },
-    /// Configuration Settings
-    Config {
-        #[clap(subcommand)]
-        command: ConfigCommands,
-    },
-    /// Project options
-    Project {
-        #[clap(subcommand)]
-        command: ProjectCommands,
-    },
-}
-
-#[derive(Subcommand)]
-enum ConfigCommands {
-    /// Set the value of a config option
-    Set {
-        #[clap(arg_enum)]
-        /// The setting to modify
-        setting: ConfigOptions,
-        /// The modified value
-        value:   String,
-    },
-    /// Initialize the config file with default options
-    Init,
-}
-
-#[derive(Subcommand)]
-enum ProjectCommands {
-    /// List Out all known projects
-    List {
-        #[clap(short, long)]
-        /// A Regex filter used to filter names when displaying projects
-        filter: Option<Regex>,
-    },
-}
-// endregion
 
 fn main() {
-    let cli = Cli::parse();
+    let matches = cli().get_matches();
 
     let mut settings = Settings::new();
 
@@ -122,78 +144,99 @@ fn main() {
         },
     };
 
-    match &cli.command {
-        Commands::New {
-            name,
-            p_type,
-            category,
-            directory,
-            templates,
-        } => {
+    match matches.subcommand() {
+        Some(("new", sub_matches)) => {
+            let name = sub_matches.get_one::<String>("name").expect("REQUIRED").clone();
+            let p_type = sub_matches.get_one::<String>("type").cloned();
+            let category = sub_matches.get_one::<String>("category").cloned();
+            let directory = sub_matches.get_one::<String>("directory").cloned();
+            let templates = sub_matches
+                .get_many::<String>("template")
+                .into_iter()
+                .flatten()
+                .cloned()
+                .collect::<Vec<_>>();
+
             new_project(&mut settings, projects, name, p_type, category, directory, templates);
         },
-        Commands::Add {
-            name,
-            directory,
-            p_type,
-            category,
-        } => {
+        Some(("add", sub_matches)) => {
+            let name = sub_matches.get_one::<String>("name").expect("REQUIRED").clone();
+            let directory = sub_matches.get_one::<String>("directory").expect("REQUIRED").clone();
+            let p_type = sub_matches.get_one::<String>("type").cloned();
+            let category = sub_matches.get_one::<String>("category").cloned();
+
             add_project(projects, name, directory, p_type, category);
         },
-        Commands::Config { command } => config_handler(&mut settings, &command),
-        Commands::Project { command } => project_handler(&mut projects, &command),
+        Some(("config", sub_matches)) => {
+            let sub_command = sub_matches.subcommand();
+
+            config_handler(&mut settings, sub_command);
+        },
+        Some(("project", sub_matches)) => {
+            let sub_command = sub_matches.subcommand();
+
+            project_handler(&mut projects, sub_command);
+        },
+        _ => unreachable!(),
     }
 }
 
-fn project_handler(projects: &mut Vec<Project>, command: &&ProjectCommands) {
-    match &command {
-        ProjectCommands::List { filter } => {
+fn project_handler(projects: &mut Vec<Project>, command: Option<(&str, &ArgMatches)>) {
+    match command {
+        Some(("list", sub_matches)) => {
+            let filter = sub_matches.get_one::<Regex>("filter").cloned();
             for project in projects {
                 if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
                     println!("{}", project.name);
                 }
             }
         },
+        _ => unreachable!(),
     }
 }
 
-fn config_handler(settings: &mut Settings, command: &&ConfigCommands) {
-    match &command {
-        ConfigCommands::Set { setting, value } => {
-            match &setting {
-                ConfigOptions::BaseDir => {
-                    settings.base_dir = Some(value.clone());
+fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>) {
+    match command {
+        Some(("set", sub_matches)) => {
+            let setting = sub_matches.get_one::<String>("setting").expect("REQUIRED").clone();
+            let value = sub_matches.get_one::<String>("value").expect("REQUIRED").clone();
+
+            match setting.as_str() {
+                "base_dir" => {
+                    settings.base_dir = Some(value);
                 },
-                ConfigOptions::TemplateDir => {
-                    settings.template_dir = Some(value.clone());
+                "template_dir" => {
+                    settings.template_dir = Some(value);
                 },
+                _ => unreachable!(),
             }
 
             settings.save();
         },
-        ConfigCommands::Init => settings.save(),
+        Some(("init", _sub_matches)) => settings.save(),
+        _ => unreachable!(),
     }
 }
 
 fn add_project(
     mut projects: Vec<Project>,
-    name: &str,
-    directory: &String,
-    p_type: &Option<String>,
-    category: &Option<String>,
+    name: String,
+    directory: String,
+    p_type: Option<String>,
+    category: Option<String>,
 ) {
     // is there a folder at directory?
-    if !std::path::Path::new(directory).exists() {
+    if !std::path::Path::new(&directory).exists() {
         eprintln!("The directory `{}` specified does not exist", directory);
         exit(1);
     }
 
     // add project to known projects
     projects.push(Project {
-        name:      name.to_string(),
-        directory: directory.clone(),
-        category:  category.clone(),
-        p_type:    p_type.clone(),
+        name,
+        directory,
+        category,
+        p_type,
     });
     file_handler::save_projects(projects);
 }
@@ -201,11 +244,11 @@ fn add_project(
 fn new_project(
     mut settings: &mut Settings,
     mut projects: Vec<Project>,
-    name: &String,
-    p_type: &Option<String>,
-    category: &Option<String>,
-    directory: &Option<String>,
-    templates: &Vec<String>,
+    name: String,
+    p_type: Option<String>,
+    category: Option<String>,
+    directory: Option<String>,
+    templates: Vec<String>,
 ) {
     if settings.base_dir.is_none() && directory.is_none() {
         eprintln!("No directory was specified, and the global Base Directory is not Set.");
@@ -222,7 +265,7 @@ fn new_project(
     if p_type.is_some() {
         project_path.push(p_type.as_ref().unwrap());
     }
-    project_path.push(name);
+    project_path.push(name.clone());
 
     let mut project = Folder {
         name:        name.clone(),
@@ -260,10 +303,10 @@ fn new_project(
 
     // add project to known projects
     projects.push(Project {
-        name:      name.clone(),
+        name,
         directory: String::from(project_path.to_str().unwrap()),
-        category:  category.clone(),
-        p_type:    p_type.clone(),
+        category: category.clone(),
+        p_type: p_type.clone(),
     });
     file_handler::save_projects(projects);
 }
