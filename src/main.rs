@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
-use std::process::exit;
+use std::process::{exit, Command as CMD};
 
 use clap::{command, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
@@ -59,6 +59,12 @@ fn cli() -> Command<'static> {
                             .multiple_values(true)
                             .action(ArgAction::Append)
                             .help("Templates to use when generating a project i.e. `--t template1 template2`"),
+                        Arg::new("GIT_URL")
+                            .short('g')
+                            .long("git-url")
+                            .takes_value(true)
+                            .conflicts_with("template")
+                            .help("Clone from a Git URL"),
                     ],
                 ),
         )
@@ -158,6 +164,7 @@ fn main() {
             let p_type = sub_matches.get_one::<String>("type").cloned();
             let category = sub_matches.get_one::<String>("category").cloned();
             let directory = sub_matches.get_one::<String>("directory").cloned();
+            let git_url = sub_matches.get_one::<String>("GIT_URL").cloned();
             let templates = sub_matches
                 .get_many::<String>("template")
                 .into_iter()
@@ -165,7 +172,26 @@ fn main() {
                 .cloned()
                 .collect::<Vec<_>>();
 
-            new_project(&mut settings, projects, name, p_type, category, directory, templates);
+            if settings.base_dir.is_none() && directory.is_none() {
+                eprintln!("No directory was specified, and the global Base Directory is not Set.");
+                eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
+                return;
+            }
+
+            let dir = directory.unwrap_or_else(|| settings.base_dir.as_ref().unwrap().clone());
+
+            new_project(
+                &mut settings,
+                projects,
+                Project {
+                    name,
+                    directory: dir,
+                    category,
+                    p_type,
+                },
+                git_url,
+                templates,
+            );
         },
         Some(("add", sub_matches)) => {
             let name = sub_matches.get_one::<String>("name").expect("REQUIRED").clone();
@@ -252,31 +278,22 @@ fn add_project(
 fn new_project(
     mut settings: &mut Settings,
     mut projects: Vec<Project>,
-    name: String,
-    p_type: Option<String>,
-    category: Option<String>,
-    directory: Option<String>,
+    project_vars: Project,
+    git_url: Option<String>,
     templates: Vec<String>,
 ) {
-    if settings.base_dir.is_none() && directory.is_none() {
-        eprintln!("No directory was specified, and the global Base Directory is not Set.");
-        eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
-        return;
+    let dir = project_vars.directory;
+    let mut project_path = std::path::PathBuf::from(dir.clone());
+    if project_vars.category.is_some() {
+        project_path.push(project_vars.category.as_ref().unwrap());
     }
-    let dir = directory
-        .as_ref()
-        .unwrap_or_else(|| settings.base_dir.as_ref().unwrap());
-    let mut project_path = std::path::PathBuf::from(dir);
-    if category.is_some() {
-        project_path.push(category.as_ref().unwrap());
+    if project_vars.p_type.is_some() {
+        project_path.push(project_vars.p_type.as_ref().unwrap());
     }
-    if p_type.is_some() {
-        project_path.push(p_type.as_ref().unwrap());
-    }
-    project_path.push(name.clone());
+    project_path.push(project_vars.name.clone());
 
     let mut project = Folder {
-        name:        name.clone(),
+        name:        project_vars.name.clone(),
         files:       vec![],
         sub_folders: vec![],
         commands:    vec![],
@@ -303,18 +320,31 @@ fn new_project(
     }
 
     let template_vars = TemplateVars {
-        project_name: name.clone(),
+        project_name: project_vars.name.clone(),
     };
 
     // build the project
     build_folder(project_path.clone(), &project, &template_vars);
 
+    // run git clone command
+    if let Some(git_url) = git_url {
+        let command = settings.git_command.replace("{FPM_GIT_URL}", git_url.as_str());
+
+        let command_parts: Vec<&str> = command.split(' ').collect();
+        // run the command stored in the command variable
+        let mut cmd = CMD::new(command_parts[0]);
+        cmd.args(&command_parts[1..]);
+        cmd.current_dir(project_path.clone());
+        cmd.status()
+            .unwrap_or_else(|err| panic!("Failed to run the command {} -- {}", command, err));
+    }
+
     // add project to known projects
     projects.push(Project {
-        name,
+        name:      project_vars.name,
         directory: String::from(project_path.to_str().unwrap()),
-        category: category.clone(),
-        p_type: p_type.clone(),
+        category:  project_vars.category.clone(),
+        p_type:    project_vars.p_type.clone(),
     });
     file_handler::save_projects(projects);
 }
