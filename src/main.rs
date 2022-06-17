@@ -1,11 +1,11 @@
-use std::fs;
 use std::path::PathBuf;
 use std::process::{exit, Command as CMD};
+use std::{fs, io};
 
 use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
 
-use crate::file_handler::{FileError, Project};
+use crate::file_handler::{save_projects, FileError, Project};
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
@@ -141,6 +141,14 @@ fn subcommand_project() -> App<'static> {
                     .help("A regex filter used to filter names when displaying projects"),
             ),
         )
+        .subcommand(
+            Command::new("verify")
+                .about("Verify that the project in the project database are where the project directory specifies")
+                .args(&[Arg::new("project_name")
+                    .takes_value(true)
+                    .default_value("*")
+                    .help("The name of the project to verify or leave blank to verify all projects")]),
+        )
 }
 
 fn main() {
@@ -229,6 +237,15 @@ fn project_handler(projects: &mut Vec<Project>, command: Option<(&str, &ArgMatch
                 }
             }
         },
+        Some(("verify", sub_matches)) => {
+            let project_name = sub_matches
+                .get_one::<String>("project_name")
+                .expect("Has Default Value")
+                .clone();
+            println!("{}", project_name);
+
+            verify_projects(projects.clone(), project_name);
+        },
         _ => unreachable!(),
     }
 }
@@ -276,7 +293,7 @@ fn add_project(
         category,
         p_type,
     });
-    file_handler::save_projects(projects);
+    save_projects(projects);
 }
 
 fn new_project(
@@ -350,5 +367,49 @@ fn new_project(
         category:  project_vars.category.clone(),
         p_type:    project_vars.p_type.clone(),
     });
-    file_handler::save_projects(projects);
+    save_projects(projects);
+}
+
+fn verify_projects(mut projects: Vec<Project>, name: String) {
+    let mut projects_to_remove = vec![];
+
+    for mut project in &mut projects {
+        if project.name == name || name == "*" {
+            // check if the folder stored in directory exits
+            if !std::path::Path::new(&project.directory).exists() {
+                println!(
+                    "{} - The directory `{}` does not exist",
+                    project.name, project.directory
+                );
+                // ask if the user wishes to modify this project
+                let mut input = String::new();
+                println!("Do you wish to modify this project? (y/n/r)");
+                io::stdin().read_line(&mut input).unwrap();
+                if input.trim() == "y" {
+                    // ask for the new directory
+                    println!("Enter the new directory");
+                    io::stdin().read_line(&mut input).unwrap();
+                    project.directory = input.trim().to_string();
+                } else if input.trim() == "r" {
+                    println!("Are you sure you want to remove this projects? (y/n)");
+                    input = String::new();
+                    io::stdin().read_line(&mut input).unwrap();
+                    if input.trim() == "y" {
+                        // remove project from projects
+                        projects_to_remove.push(project.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    projects.retain(|proj| {
+        for p in &projects_to_remove {
+            if proj.name == p.name && proj.directory == p.directory {
+                return false;
+            }
+        }
+        true
+    });
+    save_projects(projects)
 }
