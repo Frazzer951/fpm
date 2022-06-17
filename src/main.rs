@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::{exit, Command as CMD};
 
-use clap::{command, Arg, ArgAction, ArgMatches, Command};
+use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
 
 use crate::file_handler::{FileError, Project};
@@ -24,118 +24,122 @@ fn cli() -> Command<'static> {
     command!()
         .subcommand_required(true)
         .arg_required_else_help(true)
+        .subcommands(vec![
+            subcommand_new(),
+            subcommand_add(),
+            subcommand_config(),
+            subcommand_project(),
+        ])
+}
+
+fn subcommand_new() -> App<'static> {
+    Command::new("new")
+        .about("Create a New project")
+        .arg_required_else_help(true)
+        .args(&[
+            Arg::new("name")
+                .required(true)
+                .short('n')
+                .long("name")
+                .takes_value(true)
+                .help("Project Name"),
+            Arg::new("type")
+                .short('t')
+                .long("type")
+                .takes_value(true)
+                .help("Project Type - This determines the folder the project will placed into"),
+            Arg::new("category").short('c').long("category").takes_value(true).help(
+                "Project Category - Another layer of separation, similar to project type, that will help to get \
+                 project seperated. Examples would be `Work`, `Personal` and so on",
+            ),
+            Arg::new("directory")
+                .short('d')
+                .long("directory")
+                .takes_value(true)
+                .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
+            Arg::new("template")
+                .long("template")
+                .visible_alias("t")
+                .takes_value(true)
+                .multiple_values(true)
+                .action(ArgAction::Append)
+                .help("Templates to use when generating a project i.e. `--t template1 template2`"),
+            Arg::new("GIT_URL")
+                .short('g')
+                .long("git-url")
+                .takes_value(true)
+                .conflicts_with("template")
+                .help("Clone from a Git URL"),
+        ])
+}
+
+fn subcommand_add() -> App<'static> {
+    Command::new("add")
+        .about("Add an existing project")
+        .arg_required_else_help(true)
+        .args(&[
+            Arg::new("name")
+                .required(true)
+                .short('n')
+                .long("name")
+                .takes_value(true)
+                .help("Project Name"),
+            Arg::new("directory")
+                .required(true)
+                .short('d')
+                .long("directory")
+                .takes_value(true)
+                .help("Directory of the project"),
+            Arg::new("type")
+                .short('t')
+                .long("type")
+                .takes_value(true)
+                .help("Project Type"),
+            Arg::new("category")
+                .short('c')
+                .long("category")
+                .takes_value(true)
+                .help("Project Category"),
+        ])
+}
+
+fn subcommand_config() -> App<'static> {
+    Command::new("config")
+        .about("Configuration Settings")
+        .subcommand_required(true)
+        .arg_required_else_help(true)
         .subcommand(
-            Command::new("new")
-                .about("Create a New project")
+            Command::new("set")
+                .about("Set the value of a config option")
                 .arg_required_else_help(true)
                 .args(
                     &[
-                        Arg::new("name")
+                        Arg::new("setting")
                             .required(true)
-                            .short('n')
-                            .long("name")
                             .takes_value(true)
-                            .help("Project Name"),
-                        Arg::new("type")
-                            .short('t')
-                            .long("type")
-                            .takes_value(true)
-                            .help("Project Type - This determines the folder the project will placed into"),
-                        Arg::new("category").short('c').long("category").takes_value(true).help(
-                            "Project Category - Another layer of separation, similar to project type, that will help \
-                             to get project seperated. Examples would be `Work`, `Personal` and so on",
-                        ),
-                        Arg::new("directory")
-                            .short('d')
-                            .long("directory")
-                            .takes_value(true)
-                            .help(
-                                "Manually specify the base directory to use. -- Overrides base_dir specified in config",
-                            ),
-                        Arg::new("template")
-                            .long("template")
-                            .visible_alias("t")
-                            .takes_value(true)
-                            .multiple_values(true)
-                            .action(ArgAction::Append)
-                            .help("Templates to use when generating a project i.e. `--t template1 template2`"),
-                        Arg::new("GIT_URL")
-                            .short('g')
-                            .long("git-url")
-                            .takes_value(true)
-                            .conflicts_with("template")
-                            .help("Clone from a Git URL"),
+                            .value_parser(["base_dir", "template_dir"])
+                            .help("The setting to modify"),
+                        Arg::new("value").required(true).help("The modified value"),
                     ],
                 ),
         )
+        .subcommand(Command::new("init").about("Initialize the config file with default options"))
+}
+
+fn subcommand_project() -> App<'static> {
+    Command::new("project")
+        .about("Project options")
+        .subcommand_required(true)
+        .arg_required_else_help(true)
         .subcommand(
-            Command::new("add")
-                .about("Add an existing project")
-                .arg_required_else_help(true)
-                .args(
-                    &[
-                        Arg::new("name")
-                            .required(true)
-                            .short('n')
-                            .long("name")
-                            .takes_value(true)
-                            .help("Project Name"),
-                        Arg::new("directory")
-                            .required(true)
-                            .short('d')
-                            .long("directory")
-                            .takes_value(true)
-                            .help("Directory of the project"),
-                        Arg::new("type")
-                            .short('t')
-                            .long("type")
-                            .takes_value(true)
-                            .help("Project Type"),
-                        Arg::new("category")
-                            .short('c')
-                            .long("category")
-                            .takes_value(true)
-                            .help("Project Category"),
-                    ],
-                ),
-        )
-        .subcommand(
-            Command::new("config")
-                .about("Configuration Settings")
-                .subcommand_required(true)
-                .arg_required_else_help(true)
-                .subcommand(
-                    Command::new("set")
-                        .about("Set the value of a config option")
-                        .arg_required_else_help(true)
-                        .args(
-                            &[
-                                Arg::new("setting")
-                                    .required(true)
-                                    .takes_value(true)
-                                    .value_parser(["base_dir", "template_dir"])
-                                    .help("The setting to modify"),
-                                Arg::new("value").required(true).help("The modified value"),
-                            ],
-                        ),
-                )
-                .subcommand(Command::new("init").about("Initialize the config file with default options")),
-        )
-        .subcommand(
-            Command::new("project")
-                .about("Project options")
-                .subcommand_required(true)
-                .arg_required_else_help(true)
-                .subcommand(
-                    Command::new("list").about("List out all known projects").arg(
-                        Arg::new("filter")
-                            .short('f')
-                            .long("filter")
-                            .takes_value(true)
-                            .value_parser(clap::value_parser!(Regex))
-                            .help("A regex filter used to filter names when displaying projects"),
-                    ),
-                ),
+            Command::new("list").about("List out all known projects").arg(
+                Arg::new("filter")
+                    .short('f')
+                    .long("filter")
+                    .takes_value(true)
+                    .value_parser(clap::value_parser!(Regex))
+                    .help("A regex filter used to filter names when displaying projects"),
+            ),
         )
 }
 
