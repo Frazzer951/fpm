@@ -1,10 +1,10 @@
 use std::process::exit;
 
-use clap::{App, Arg, ArgAction, ArgMatches, command, Command};
+use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
 
-use crate::file_handler::{FileError, Project, save_projects};
-use crate::project_structure::{build_folder, Folder, load_template, TemplateVars};
+use crate::file_handler::{save_projects, FileError, Project};
+use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
 mod file_handler;
