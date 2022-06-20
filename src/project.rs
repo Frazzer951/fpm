@@ -28,15 +28,6 @@ pub fn project_handler(projects: &mut Vec<Project>, command: Option<(&str, &ArgM
 
             verify_projects(projects.clone(), project_name);
         },
-        Some(("test", sub_matches)) => {
-            let project_name = sub_matches
-                .get_one::<String>("project_name")
-                .expect("Has Default Value")
-                .clone();
-            println!("{}", project_name);
-
-            test(projects.clone(), project_name);
-        },
         _ => unreachable!(),
     }
 }
@@ -141,7 +132,12 @@ pub fn new_project(
 pub fn verify_projects(mut projects: Vec<Project>, name: String) {
     let mut projects_to_remove = vec![];
 
-    get_similar(&projects, &name);
+    let project_names = get_similar(&projects, &name);
+    if name != "*" && project_names.0 != 0 {
+        println!("No project with the name {} was found", name);
+        println!("Did you mean on of the following: {:?}", project_names.1);
+        exit(1);
+    }
 
     for mut project in &mut projects {
         if project.name == name || name == "*" {
@@ -182,10 +178,6 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
         true
     });
     save_projects(projects)
-}
-
-pub fn test(projects: Vec<Project>, name: String) {
-    println!("{:#?}", get_similar(&projects, &name));
 }
 
 fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {

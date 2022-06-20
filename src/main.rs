@@ -148,14 +148,6 @@ fn subcommand_project() -> App<'static> {
                     .default_value("*")
                     .help("The name of the project to verify or leave blank to verify all projects")]),
         )
-        .subcommand(
-            Command::new("test")
-                .about("This is a test command, this shouldn't be seen")
-                .args(&[Arg::new("project_name")
-                    .takes_value(true)
-                    .default_value("*")
-                    .help("The name of the project to verify or leave blank to verify all projects")]),
-        )
 }
 
 fn main() {
