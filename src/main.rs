@@ -1,10 +1,10 @@
 use std::process::exit;
 
-use clap::{App, Arg, ArgAction, ArgMatches, command, Command};
+use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
 use regex::Regex;
 
-use crate::file_handler::{FileError, Project, save_projects};
-use crate::project_structure::{build_folder, Folder, load_template, TemplateVars};
+use crate::file_handler::{save_projects, FileError, Project};
+use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
 mod file_handler;
@@ -143,6 +143,14 @@ fn subcommand_project() -> App<'static> {
         .subcommand(
             Command::new("verify")
                 .about("Verify that the project in the project database are where the project directory specifies")
+                .args(&[Arg::new("project_name")
+                    .takes_value(true)
+                    .default_value("*")
+                    .help("The name of the project to verify or leave blank to verify all projects")]),
+        )
+        .subcommand(
+            Command::new("test")
+                .about("This is a test command, this shouldn't be seen")
                 .args(&[Arg::new("project_name")
                     .takes_value(true)
                     .default_value("*")
