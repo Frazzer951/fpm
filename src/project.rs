@@ -8,10 +8,46 @@ use strsim::osa_distance;
 
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
-pub fn project_handler(projects: &mut [Project], project_name: String, command: Option<(&str, &ArgMatches)>) {
+pub struct RefactorFlags {
+    dry_run:     bool,
+    force:       bool,
+    interactive: bool,
+}
+
+pub fn project_handler(
+    projects: &mut [Project],
+    project_name: String,
+    settings: Settings,
+    command: Option<(&str, &ArgMatches)>,
+) {
     match command {
         Some(("verify", _sub_matches)) => {
             verify_projects(projects.to_owned(), project_name);
+        },
+        Some(("refactor", sub_matches)) => {
+            let dry_run = sub_matches.get_one::<bool>("dry-run").cloned().expect("BOOL VALUE");
+            let force = sub_matches.get_one::<bool>("force").cloned().expect("BOOL VALUE");
+            let interactive = sub_matches.get_one::<bool>("interactive").cloned().expect("BOOL VALUE");
+            let directory = sub_matches.get_one::<String>("directory").cloned();
+
+            if settings.base_dir.is_none() && directory.is_none() {
+                eprintln!("No directory was specified, and the global Base Directory is not Set.");
+                eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
+                return;
+            }
+
+            let dir = directory.unwrap_or_else(|| settings.base_dir.as_ref().unwrap().clone());
+
+            refactor_projects(
+                projects.to_owned(),
+                project_name,
+                dir,
+                RefactorFlags {
+                    dry_run,
+                    force,
+                    interactive,
+                },
+            );
         },
         _ => unreachable!(),
     }
@@ -162,6 +198,60 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
         true
     });
     save_projects(projects)
+}
+
+pub fn refactor_projects(
+    mut projects: Vec<Project>,
+    name: String,
+    base_dir: String,
+    flags: RefactorFlags,
+) {
+    for project in &mut projects {
+        if project.name == name || name == "*" {
+            let mut dir = PathBuf::from(&base_dir);
+            if let Some(category) = &project.category {
+                dir.push(category)
+            }
+            if let Some(p_type) = &project.p_type {
+                dir.push(p_type)
+            }
+            dir.push(project.name.clone());
+
+            let cur_dir = PathBuf::from(project.directory.clone().trim_start());
+
+            if dir != cur_dir {
+                if flags.dry_run {
+                    println!("{} -- {} --> {}", project.name, cur_dir.display(), dir.display());
+                } else if flags.force || flags.interactive {
+                    println!("{} -- {} --> {}", project.name, cur_dir.display(), dir.display());
+                    if flags.interactive {
+                        // ask if the user would like to move this folder
+                        let mut input = String::new();
+                        println!("Do you wish to move this folder? (y/n)");
+                        io::stdin().read_line(&mut input).unwrap();
+                        if input.trim() != "y" {
+                            continue;
+                        }
+                    }
+
+                    fs::create_dir_all(dir.clone())
+                        .unwrap_or_else(|_| panic!("Failed to create the directory {}", dir.display()));
+                    let options = fs_extra::dir::CopyOptions::new();
+                    fs_extra::move_items(&[cur_dir], dir.clone(), &options).unwrap();
+
+                    project.directory = String::from(dir.to_str().unwrap());
+                    println!("Finished moving {}", project.name);
+                } else {
+                    eprintln!(
+                        "Please set one of the process flags to run the refactor. I.E. --dry-run, --force, or \
+                         --interactive"
+                    );
+                    exit(1);
+                }
+            }
+        }
+    }
+    save_projects(projects);
 }
 
 pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {

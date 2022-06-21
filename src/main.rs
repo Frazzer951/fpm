@@ -147,6 +147,36 @@ fn subcommand_project() -> App<'static> {
             Command::new("verify")
                 .about("Verify that the project in the project database are where the project directory specifies"),
         )
+        .subcommand(
+            Command::new("refactor")
+                .about("Move folders to the correct directory based on their name, category, and type")
+                .args(
+                    &[
+                        Arg::new("dry-run")
+                            .short('n')
+                            .long("dry-run")
+                            .action(ArgAction::SetTrue)
+                            .help("Do not move any folders yet just see what would change"),
+                        Arg::new("force")
+                            .short('f')
+                            .long("force")
+                            .action(ArgAction::SetTrue)
+                            .help("Required to move folders when not using Interactive mode"),
+                        Arg::new("interactive")
+                            .short('i')
+                            .long("interactive")
+                            .action(ArgAction::SetTrue)
+                            .help("Ask the user for each folder if it should move"),
+                        Arg::new("directory")
+                            .short('d')
+                            .long("directory")
+                            .takes_value(true)
+                            .help(
+                                "Manually specify the base directory to use. -- Overrides base_dir specified in config",
+                            ),
+                    ],
+                ),
+        )
 }
 
 fn subcommand_list() -> App<'static> {
@@ -243,7 +273,7 @@ fn main() {
                 exit(1);
             }
 
-            project::project_handler(&mut projects, project_name, sub_command);
+            project::project_handler(&mut projects, project_name, settings, sub_command);
         },
         Some(("list", sub_matches)) => {
             let filter = sub_matches.get_one::<Regex>("filter").cloned();
