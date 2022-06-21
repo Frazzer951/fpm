@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::process::{exit, Command};
 use std::{fs, io};
@@ -107,8 +107,10 @@ pub fn new_project(
         settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
     }
 
+    let mut user_template_vars = HashSet::new();
+
     for template in templates {
-        load_template(settings, &mut project, template.clone());
+        user_template_vars.extend(load_template(settings, &mut project, template.clone()).into_iter());
     }
 
     // create project folders
@@ -121,12 +123,23 @@ pub fn new_project(
         return;
     }
 
+    let user_template_vars = user_template_vars
+        .into_iter()
+        .map(|f| {
+            // get user input for template variables
+            println!("Enter the value for {}: ", f);
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
+            (f, input.trim().to_string())
+        })
+        .collect::<Vec<(String, String)>>();
+
     let template_vars = TemplateVars {
         project_name: project_vars.name.clone(),
     };
 
     // build the project
-    build_folder(project_path.clone(), &project, &template_vars);
+    build_folder(project_path.clone(), &project, &template_vars, &user_template_vars);
 
     // run git clone command
     if let Some(git_url) = git_url {

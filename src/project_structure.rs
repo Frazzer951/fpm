@@ -5,7 +5,7 @@ use std::process::{exit, Command};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{Settings, PROJECT_NAME};
+use crate::Settings;
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 pub struct Folder {
@@ -32,6 +32,8 @@ pub struct Template {
     pub files:          Vec<File>,
     #[serde(default)]
     pub commands:       Vec<String>,
+    #[serde(default)]
+    pub template_vars:  Vec<String>,
     pub folder_pointer: Option<String>,
     pub file_pointer:   Option<String>,
 }
@@ -40,7 +42,7 @@ pub struct TemplateVars {
     pub project_name: String,
 }
 
-pub fn load_template(settings: &Settings, project: &mut Folder, mut template_name: String) {
+pub fn load_template(settings: &Settings, project: &mut Folder, mut template_name: String) -> Vec<String> {
     let mut template_dir = PathBuf::from(settings.template_dir.clone().unwrap());
 
     // make sure path exists
@@ -49,7 +51,7 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
     template_name.push_str(".yaml");
     template_dir.push(template_name.clone());
 
-    let contents = match fs::read_to_string(template_dir) {
+    let contents = match fs::read_to_string(&template_dir) {
         Ok(c) => c,
         Err(_) => {
             eprintln!("The template: {} could not be found", template_name);
@@ -59,10 +61,10 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
 
     let template: Template = match serde_yaml::from_str(&contents) {
         Ok(d) => d,
-        Err(_) => {
+        Err(err) => {
             eprintln!(
-                "The template: {} could not be parsed. Please check it for errors",
-                template_name
+                "The template: {} could not be parsed. Please check it for errors\n{}",
+                template_name, err
             );
             exit(1);
         },
@@ -72,11 +74,11 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
     project.files.extend(template.files);
     project.commands.extend(template.commands);
 
+    template_dir.pop();
+
     // open and parse folder pointer
     if let Some(folder_pointer) = template.folder_pointer {
-        let mut file_path = dirs::config_dir().unwrap();
-        file_path.push(PROJECT_NAME);
-        file_path.push("templates");
+        let mut file_path = template_dir.clone();
         file_path.push(folder_pointer);
         let folder = load_folder(file_path);
         project.sub_folders.extend(folder.sub_folders);
@@ -85,25 +87,30 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
 
     // open and parse file pointer
     if let Some(file_pointer) = template.file_pointer {
-        let mut file_path = dirs::config_dir().unwrap();
-        file_path.push(PROJECT_NAME);
-        file_path.push("templates");
+        let mut file_path = template_dir.clone();
         file_path.push(file_pointer);
         project.files.push(load_file(file_path));
     }
+
+    template.template_vars
 }
 
-pub fn build_folder(path: std::path::PathBuf, folder: &Folder, template_vars: &TemplateVars) {
+pub fn build_folder(
+    path: std::path::PathBuf,
+    folder: &Folder,
+    template_vars: &TemplateVars,
+    user_vars: &Vec<(String, String)>,
+) {
     for sub_folder in folder.sub_folders.clone() {
         let mut f_path = path.clone();
         f_path.push(sub_folder.name.clone());
         fs::create_dir_all(f_path.clone())
             .unwrap_or_else(|_| panic!("Failed to create the directory {}", f_path.display()));
-        build_folder(f_path, &sub_folder, template_vars)
+        build_folder(f_path, &sub_folder, template_vars, user_vars)
     }
 
     for file in folder.files.clone() {
-        build_file(path.clone(), &file, template_vars);
+        build_file(path.clone(), &file, template_vars, user_vars);
     }
 
     for command in folder.commands.clone() {
@@ -117,19 +124,28 @@ pub fn build_folder(path: std::path::PathBuf, folder: &Folder, template_vars: &T
     }
 }
 
-pub fn build_file(mut path: std::path::PathBuf, file: &File, template_vars: &TemplateVars) {
+pub fn build_file(
+    mut path: std::path::PathBuf,
+    file: &File,
+    template_vars: &TemplateVars,
+    user_vars: &Vec<(String, String)>,
+) {
     path.push(file.filename.clone());
     let mut f =
         fs::File::create(path).unwrap_or_else(|err| panic!("Failed to create the file {} -- {}", file.filename, err));
     for line in &file.lines_of_file {
-        let line = process_template_vars(line, template_vars) + "\n";
+        let line = process_template_vars(line, template_vars, user_vars) + "\n";
         f.write_all(line.as_bytes())
             .unwrap_or_else(|err| panic!("Failed to write to file {} -- {}", file.filename, err));
     }
 }
 
-fn process_template_vars(string: &str, vars: &TemplateVars) -> String {
-    let line = string.replace("{fpm_project_name}", vars.project_name.as_str());
+fn process_template_vars(string: &str, vars: &TemplateVars, user_vars: &Vec<(String, String)>) -> String {
+    let mut line = string.replace("{fpm_project_name}", vars.project_name.as_str());
+
+    for (template, value) in user_vars {
+        line = line.replace(format!("{{{}}}", template).as_str(), value.as_str());
+    }
 
     line
 }
