@@ -131,13 +131,16 @@ fn subcommand_project() -> App<'static> {
         .about("Project options")
         .subcommand_required(true)
         .arg_required_else_help(true)
+        .arg(
+            Arg::new("project_name")
+                .takes_value(true)
+                .default_value("*")
+                .global(true)
+                .help("The name of the project to verify or leave blank to verify all projects"),
+        )
         .subcommand(
             Command::new("verify")
-                .about("Verify that the project in the project database are where the project directory specifies")
-                .args(&[Arg::new("project_name")
-                    .takes_value(true)
-                    .default_value("*")
-                    .help("The name of the project to verify or leave blank to verify all projects")]),
+                .about("Verify that the project in the project database are where the project directory specifies"),
         )
 }
 
@@ -221,8 +224,19 @@ fn main() {
         },
         Some(("project", sub_matches)) => {
             let sub_command = sub_matches.subcommand();
+            let project_name = sub_matches
+                .get_one::<String>("project_name")
+                .expect("Has Default Value")
+                .clone();
 
-            project::project_handler(&mut projects, sub_command);
+            let project_names = project::get_similar(&projects, &project_name);
+            if project_name != "*" && project_names.0 != 0 {
+                println!("No project with the name {} was found", project_name);
+                println!("Did you mean on of the following: {:?}", project_names.1);
+                exit(1);
+            }
+
+            project::project_handler(&mut projects, project_name, sub_command);
         },
         Some(("list", sub_matches)) => {
             let filter = sub_matches.get_one::<Regex>("filter").cloned();

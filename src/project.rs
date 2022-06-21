@@ -8,15 +8,9 @@ use strsim::osa_distance;
 
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
-pub fn project_handler(projects: &mut Vec<Project>, command: Option<(&str, &ArgMatches)>) {
+pub fn project_handler(projects: &mut Vec<Project>, project_name: String, command: Option<(&str, &ArgMatches)>) {
     match command {
-        Some(("verify", sub_matches)) => {
-            let project_name = sub_matches
-                .get_one::<String>("project_name")
-                .expect("Has Default Value")
-                .clone();
-            println!("{}", project_name);
-
+        Some(("verify", _sub_matches)) => {
             verify_projects(projects.clone(), project_name);
         },
         _ => unreachable!(),
@@ -123,13 +117,6 @@ pub fn new_project(
 pub fn verify_projects(mut projects: Vec<Project>, name: String) {
     let mut projects_to_remove = vec![];
 
-    let project_names = get_similar(&projects, &name);
-    if name != "*" && project_names.0 != 0 {
-        println!("No project with the name {} was found", name);
-        println!("Did you mean on of the following: {:?}", project_names.1);
-        exit(1);
-    }
-
     for mut project in &mut projects {
         if project.name == name || name == "*" {
             // check if the folder stored in directory exits
@@ -171,7 +158,7 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
     save_projects(projects)
 }
 
-fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {
+pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {
     let names: Vec<String> = projects.iter().map(|proj| proj.name.clone()).collect();
     let names = names.iter().map(|s| s as &str).collect();
     let name_distances = similar_strings(name, names);
