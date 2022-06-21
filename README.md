@@ -49,7 +49,6 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -128,20 +127,6 @@ fpm new -n MyProjectName
 ```
 
 _For more examples, please refer to the [Documentation](https://github.com/Frazzer951/fpm/wiki)_
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-- [ ] User Specified Template Variables
-- [ ] Edit Existing Projects
-- [ ] Refactor Projects
-
-See the [open issues](https://github.com/frazzer951/fpm/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
