@@ -3,11 +3,11 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::{exit, Command};
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::Settings;
 
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+#[derive(Deserialize, Default, Debug, Clone)]
 pub struct Folder {
     pub name:        String,
     #[serde(default)]
@@ -18,13 +18,23 @@ pub struct Folder {
     pub commands:    Vec<String>,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
+impl Folder {
+    pub fn add_file_to_deepest_folder(&mut self, file: File) {
+        if self.sub_folders.is_empty() {
+            self.files.push(file);
+        } else {
+            self.sub_folders[0].add_file_to_deepest_folder(file);
+        }
+    }
+}
+
+#[derive(Deserialize, Default, Debug, Clone)]
 pub struct File {
     pub filename:      String,
     pub lines_of_file: Vec<String>,
 }
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Default, Debug)]
 pub struct Template {
     #[serde(default)]
     pub folders:        Vec<Folder>,
@@ -35,7 +45,13 @@ pub struct Template {
     #[serde(default)]
     pub template_vars:  Vec<String>,
     pub folder_pointer: Option<String>,
-    pub file_pointer:   Option<String>,
+    pub file_pointer:   Option<FilePointer>,
+}
+
+#[derive(Deserialize, Default, Debug)]
+pub struct FilePointer {
+    pub file_dir:      String,
+    pub parent_folder: Option<Folder>,
 }
 
 pub struct TemplateVars {
@@ -88,8 +104,16 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
     // open and parse file pointer
     if let Some(file_pointer) = template.file_pointer {
         let mut file_path = template_dir.clone();
-        file_path.push(file_pointer);
-        project.files.push(load_file(file_path));
+        file_path.push(file_pointer.file_dir);
+        let file = load_file(file_path);
+        if file_pointer.parent_folder.is_some() {
+            let mut parent_folder = file_pointer.parent_folder.unwrap();
+            parent_folder.add_file_to_deepest_folder(file);
+            println!("{:#?}", parent_folder);
+            project.sub_folders.push(parent_folder);
+        } else {
+            project.files.push(file);
+        }
     }
 
     template.template_vars
@@ -161,7 +185,7 @@ fn load_file(path: PathBuf) -> File {
 
     File {
         filename:      path.file_name().unwrap().to_str().unwrap().to_string(),
-        lines_of_file: vec![contents],
+        lines_of_file: contents.lines().map(|x| x.to_string()).collect(),
     }
 }
 
