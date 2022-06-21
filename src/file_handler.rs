@@ -29,7 +29,7 @@ impl fmt::Display for FileError {
 // endregion
 
 // region -- Project Struct
-#[derive(Deserialize, Serialize, Default, Debug, Clone, Eq, Hash, PartialEq)]
+#[derive(PartialOrd, Ord, Deserialize, Serialize, Default, Debug, Clone, Eq, Hash, PartialEq)]
 pub struct Project {
     pub name:      String,
     pub directory: String,
@@ -66,7 +66,7 @@ pub fn save_projects(projects: Vec<Project>) {
     projects_dir.push(PROJECT_DB_FILENAME);
 
     // remove duplicates
-    let projects: Vec<Project> = projects.into_iter().unique().collect();
+    let projects: Vec<Project> = projects.into_iter().unique().sorted().collect();
 
     // save config to config_dir
     let contents = serde_json::to_string(&projects).unwrap();

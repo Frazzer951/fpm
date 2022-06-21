@@ -11,6 +11,7 @@ repository = "https://github.com/Frazzer951/fpm"
 clap = { version = "3.2", features = ["derive", "cargo"] }
 config = "0.13"
 dirs = "4.0"
+fs_extra = "1.2.0"
 itertools = "0.10"
 opener = "0.5"
 regex = "1.5"
