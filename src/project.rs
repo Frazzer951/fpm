@@ -4,21 +4,12 @@ use std::process::{exit, Command};
 use std::{fs, io};
 
 use clap::ArgMatches;
-use regex::Regex;
 use strsim::osa_distance;
 
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
 pub fn project_handler(projects: &mut Vec<Project>, command: Option<(&str, &ArgMatches)>) {
     match command {
-        Some(("list", sub_matches)) => {
-            let filter = sub_matches.get_one::<Regex>("filter").cloned();
-            for project in projects {
-                if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
-                    println!("{}", project.name);
-                }
-            }
-        },
         Some(("verify", sub_matches)) => {
             let project_name = sub_matches
                 .get_one::<String>("project_name")

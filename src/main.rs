@@ -28,6 +28,7 @@ fn cli() -> Command<'static> {
             subcommand_add(),
             subcommand_config(),
             subcommand_project(),
+            subcommand_list(),
         ])
 }
 
@@ -131,16 +132,6 @@ fn subcommand_project() -> App<'static> {
         .subcommand_required(true)
         .arg_required_else_help(true)
         .subcommand(
-            Command::new("list").about("List out all known projects").arg(
-                Arg::new("filter")
-                    .short('f')
-                    .long("filter")
-                    .takes_value(true)
-                    .value_parser(clap::value_parser!(Regex))
-                    .help("A regex filter used to filter names when displaying projects"),
-            ),
-        )
-        .subcommand(
             Command::new("verify")
                 .about("Verify that the project in the project database are where the project directory specifies")
                 .args(&[Arg::new("project_name")
@@ -148,6 +139,17 @@ fn subcommand_project() -> App<'static> {
                     .default_value("*")
                     .help("The name of the project to verify or leave blank to verify all projects")]),
         )
+}
+
+fn subcommand_list() -> App<'static> {
+    Command::new("list").about("List out all known projects").arg(
+        Arg::new("filter")
+            .short('f')
+            .long("filter")
+            .takes_value(true)
+            .value_parser(clap::value_parser!(Regex))
+            .help("A regex filter used to filter names when displaying projects"),
+    )
 }
 
 fn main() {
@@ -221,6 +223,14 @@ fn main() {
             let sub_command = sub_matches.subcommand();
 
             project::project_handler(&mut projects, sub_command);
+        },
+        Some(("list", sub_matches)) => {
+            let filter = sub_matches.get_one::<Regex>("filter").cloned();
+            for project in projects {
+                if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
+                    println!("{}", project.name);
+                }
+            }
         },
         _ => unreachable!(),
     }
