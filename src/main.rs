@@ -70,6 +70,11 @@ fn subcommand_new() -> App<'static> {
                 .takes_value(true)
                 .conflicts_with("template")
                 .help("Clone from a Git URL"),
+            Arg::new("open")
+                .short('o')
+                .long("open")
+                .action(ArgAction::SetTrue)
+                .help("Open the project folder after creating it"),
         ])
 }
 
@@ -181,6 +186,7 @@ fn main() {
             let category = sub_matches.get_one::<String>("category").cloned();
             let directory = sub_matches.get_one::<String>("directory").cloned();
             let git_url = sub_matches.get_one::<String>("GIT_URL").cloned();
+            let open = sub_matches.get_one::<bool>("open").cloned().expect("BOOL VALUE");
             let templates = sub_matches
                 .get_many::<String>("template")
                 .into_iter()
@@ -207,6 +213,7 @@ fn main() {
                 },
                 git_url,
                 templates,
+                open,
             );
         },
         Some(("add", sub_matches)) => {

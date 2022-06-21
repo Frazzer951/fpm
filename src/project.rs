@@ -8,10 +8,10 @@ use strsim::osa_distance;
 
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
-pub fn project_handler(projects: &mut Vec<Project>, project_name: String, command: Option<(&str, &ArgMatches)>) {
+pub fn project_handler(projects: &mut [Project], project_name: String, command: Option<(&str, &ArgMatches)>) {
     match command {
         Some(("verify", _sub_matches)) => {
-            verify_projects(projects.clone(), project_name);
+            verify_projects(projects.to_owned(), project_name);
         },
         _ => unreachable!(),
     }
@@ -46,6 +46,7 @@ pub fn new_project(
     project_vars: Project,
     git_url: Option<String>,
     templates: Vec<String>,
+    open: bool,
 ) {
     let dir = project_vars.directory;
     let mut project_path = std::path::PathBuf::from(dir.clone());
@@ -112,6 +113,11 @@ pub fn new_project(
         p_type:    project_vars.p_type.clone(),
     });
     save_projects(projects);
+
+    if open {
+        // open dir
+        opener::open(project_path).expect("Failed to open the directory");
+    }
 }
 
 pub fn verify_projects(mut projects: Vec<Project>, name: String) {
