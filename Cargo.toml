@@ -1,6 +1,6 @@
 [package]
 name = "fpm"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Luke Eltiste"]
 description = "A CLI Program to help manage projects"
