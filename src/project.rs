@@ -15,7 +15,7 @@ pub struct RefactorFlags {
 }
 
 pub fn project_handler(
-    projects: &mut [Project],
+    projects: &mut Vec<Project>,
     project_name: String,
     settings: Settings,
     command: Option<(&str, &ArgMatches)>,
@@ -48,6 +48,19 @@ pub fn project_handler(
                     interactive,
                 },
             );
+        },
+        Some(("edit", sub_matches)) => {
+            let name = sub_matches.get_one::<String>("name").cloned();
+            let directory = sub_matches.get_one::<String>("directory").cloned();
+            let p_type = sub_matches.get_one::<String>("type").cloned();
+            let category = sub_matches.get_one::<String>("category").cloned();
+
+            if project_name == "*" {
+                eprintln!("You must specify a project name to edit.");
+                exit(1);
+            }
+
+            edit_project(projects.to_vec(), project_name, name, directory, p_type, category);
         },
         _ => unreachable!(),
     }
@@ -259,6 +272,49 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
             }
         }
     }
+    save_projects(projects);
+}
+
+fn edit_project(
+    mut projects: Vec<Project>,
+    project_name: String,
+    name: Option<String>,
+    directory: Option<String>,
+    p_type: Option<String>,
+    category: Option<String>,
+) {
+    let mut filtered_projects: Vec<&mut Project> = projects.iter_mut().filter(|p| p.name == project_name).collect();
+    let project_index = if filtered_projects.len() > 1 {
+        println!("More than one project found with the name {}", project_name);
+        println!("Enter the number for the project you wish to edit");
+        for (num, proj) in filtered_projects.iter().enumerate() {
+            println!("{}: {} - {}", num, proj.name, proj.directory);
+        }
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        let num = input.trim().parse::<usize>().unwrap();
+        println!(
+            "Editing project {} in {}",
+            filtered_projects[num].name, filtered_projects[num].directory
+        );
+        num
+    } else {
+        0
+    };
+
+    if let Some(name) = name {
+        filtered_projects[project_index].name = name;
+    }
+    if let Some(directory) = directory {
+        filtered_projects[project_index].directory = directory;
+    }
+    if let Some(p_type) = p_type {
+        filtered_projects[project_index].p_type = Some(p_type);
+    }
+    if let Some(category) = category {
+        filtered_projects[project_index].category = Some(category);
+    }
+
     save_projects(projects);
 }
 

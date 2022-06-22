@@ -177,6 +177,32 @@ fn subcommand_project() -> App<'static> {
                     ],
                 ),
         )
+        .subcommand(
+            Command::new("edit").about("edit a project").args(
+                &[
+                    Arg::new("name")
+                        .short('n')
+                        .long("name")
+                        .takes_value(true)
+                        .help("Change the project's name"),
+                    Arg::new("directory")
+                        .short('d')
+                        .long("directory")
+                        .takes_value(true)
+                        .help("Change the project's directory. DOES NOT MOVE THE PROJECT"),
+                    Arg::new("type")
+                        .short('t')
+                        .long("type")
+                        .takes_value(true)
+                        .help("Change the project's type"),
+                    Arg::new("category")
+                        .short('c')
+                        .long("category")
+                        .takes_value(true)
+                        .help("Change the project's category"),
+                ],
+            ),
+        )
 }
 
 fn subcommand_list() -> App<'static> {
