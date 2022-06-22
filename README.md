@@ -148,7 +148,7 @@ Don't forget to give the project a star! Thanks again!
 3. Commit your Changes
    using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) (`git commit -m 'feat: Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+5. Open a Pull Request to the develop branch
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
