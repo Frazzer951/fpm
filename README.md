@@ -29,8 +29,6 @@
   </p>
 </div>
 
-
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -55,8 +53,6 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
 
 ## About The Project
@@ -69,12 +65,10 @@ clone and exiting git remote, or you can specify different templates to use.
 
 ### Built With
 
-* [Rust](https://www.rust-lang.org/)
-* [Clap](https://github.com/clap-rs/clap)
+- [Rust](https://www.rust-lang.org/)
+- [Clap](https://github.com/clap-rs/clap)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- GETTING STARTED -->
 
@@ -85,9 +79,9 @@ To get a local copy up and running follow these simple example steps.
 
 ### Prerequisites
 
-* Optional - Cargo
-    - https://rustup.rs/
-    - This makes the installation process much easier, but is optional
+- Optional - Cargo
+  - https://rustup.rs/
+  - This makes the installation process much easier, but is optional
 
 ### Installation
 
@@ -95,10 +89,9 @@ To get a local copy up and running follow these simple example steps.
 
 1. Install the cargo crate directly from GitHub
    ```sh
-   cargo install --git https://github.com/Frazzer951/fpm.git --tag v0.2.0
+   cargo install --git https://github.com/Frazzer951/fpm.git
    ```
-   You can leave out the tag to use the main branch of the repo. Or change the tag to use a different version of the
-   repo
+   To install a specific release version use `--tag <VERSION TAG>`
 
 #### Option 2 - Manual Install
 
@@ -107,8 +100,6 @@ To get a local copy up and running follow these simple example steps.
 2. Place the binary into a folder seen by your OSes PATH variable, so it can be called from anywhere
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- USAGE EXAMPLES -->
 
@@ -130,8 +121,6 @@ _For more examples, please refer to the [Documentation](https://github.com/Frazz
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
 
 ## Contributing
@@ -152,8 +141,6 @@ Don't forget to give the project a star! Thanks again!
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
 
 ## License
@@ -161,8 +148,6 @@ Don't forget to give the project a star! Thanks again!
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- CONTACT -->
 
@@ -174,32 +159,18 @@ Project Link: [https://github.com/frazzer951/fpm](https://github.com/frazzer951/
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
-
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 [contributors-shield]: https://img.shields.io/github/contributors/frazzer951/fpm.svg?style=for-the-badge
-
 [contributors-url]: https://github.com/frazzer951/fpm/graphs/contributors
-
 [forks-shield]: https://img.shields.io/github/forks/frazzer951/fpm.svg?style=for-the-badge
-
 [forks-url]: https://github.com/frazzer951/fpm/network/members
-
 [stars-shield]: https://img.shields.io/github/stars/frazzer951/fpm.svg?style=for-the-badge
-
 [stars-url]: https://github.com/frazzer951/fpm/stargazers
-
 [issues-shield]: https://img.shields.io/github/issues/frazzer951/fpm.svg?style=for-the-badge
-
 [issues-url]: https://github.com/frazzer951/fpm/issues
-
 [license-shield]: https://img.shields.io/github/license/frazzer951/fpm?style=for-the-badge
-
 [license-url]: https://github.com/Frazzer951/fpm/blob/main/LICENSE
-
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-
 [linkedin-url]: https://linkedin.com/in/luke-eltiste
