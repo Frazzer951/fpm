@@ -1,9 +1,12 @@
+use std::path::PathBuf;
 use std::process::exit;
 
 use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
+use path_absolutize::Absolutize;
 use regex::Regex;
 
 use crate::file_handler::{save_projects, FileError, Project};
+use crate::project::add_project_from_folder;
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
@@ -28,6 +31,7 @@ fn cli() -> Command<'static> {
             subcommand_config(),
             subcommand_project(),
             subcommand_list(),
+            subcommand_add_folder(),
         ])
 }
 
@@ -215,6 +219,28 @@ fn subcommand_list() -> App<'static> {
     )
 }
 
+fn subcommand_add_folder() -> App<'static> {
+    Command::new("add-folder")
+        .about("Interactively add folders from the specified directory")
+        .args(&[
+            Arg::new("path")
+                .takes_value(true)
+                .required(true)
+                .value_parser(clap::value_parser!(PathBuf))
+                .help("The Path to the directory to add folders from"),
+            Arg::new("type")
+                .short('t')
+                .long("type")
+                .takes_value(true)
+                .help("Project Type"),
+            Arg::new("category")
+                .short('c')
+                .long("category")
+                .takes_value(true)
+                .help("Project Category"),
+        ])
+}
+
 fn main() {
     // Parse the command line arguments
     let matches = cli().get_matches();
@@ -287,7 +313,7 @@ fn main() {
             let category = sub_matches.get_one::<String>("category").cloned();
 
             // Add the project to the database
-            project::add_project(projects, name, directory, p_type, category);
+            project::add_project(&mut projects, name, directory, p_type, category);
         },
         Some(("config", sub_matches)) => {
             // Load the subcommands and pass it to the config handler
@@ -321,6 +347,15 @@ fn main() {
                     println!("{}", project.name);
                 }
             }
+        },
+        Some(("add-folder", sub_matches)) => {
+            // Load the variables
+            let input_path = sub_matches.get_one::<PathBuf>("path").expect("REQUIRED").clone();
+            let path = input_path.absolutize().unwrap().to_path_buf();
+            let p_type = sub_matches.get_one::<String>("type").cloned();
+            let category = sub_matches.get_one::<String>("category").cloned();
+
+            add_project_from_folder(projects, path, p_type, category);
         },
         _ => unreachable!(),
     }

@@ -67,7 +67,7 @@ pub fn project_handler(
 }
 
 pub fn add_project(
-    mut projects: Vec<Project>,
+    projects: &mut Vec<Project>,
     name: String,
     directory: String,
     p_type: Option<String>,
@@ -87,6 +87,40 @@ pub fn add_project(
         p_type,
     });
     save_projects(projects);
+}
+
+pub fn add_project_from_folder(
+    mut projects: Vec<Project>,
+    path: PathBuf,
+    p_type: Option<String>,
+    category: Option<String>,
+) {
+    // is there a folder at path?
+    if !std::path::Path::new(&path).exists() {
+        eprintln!("The directory `{}` specified does not exist", path.display());
+        exit(1);
+    }
+
+    for folder in fs::read_dir(path).unwrap() {
+        let folder = folder.unwrap();
+        let path = folder.path();
+        if path.is_dir() {
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            let directory = path.to_str().unwrap().to_string();
+
+            // if there is a project with the same name, don't add it
+            if projects.iter().any(|p| p.name == name || p.directory == directory) {
+                continue;
+            }
+
+            println!("Would you like to add the folder `{}` ({})? (y/n):", name, directory);
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
+            if input.trim() == "y" {
+                add_project(&mut projects, name, directory, p_type.clone(), category.clone());
+            }
+        }
+    }
 }
 
 pub fn new_project(
@@ -174,7 +208,7 @@ pub fn new_project(
         category:  project_vars.category.clone(),
         p_type:    project_vars.p_type.clone(),
     });
-    save_projects(projects);
+    save_projects(&projects);
 
     if open {
         // open dir
@@ -224,7 +258,7 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
         }
         true
     });
-    save_projects(projects)
+    save_projects(&projects)
 }
 
 pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: String, flags: RefactorFlags) {
@@ -273,7 +307,7 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
             }
         }
     }
-    save_projects(projects);
+    save_projects(&projects);
 }
 
 fn edit_project(
@@ -316,7 +350,7 @@ fn edit_project(
         filtered_projects[project_index].category = Some(category);
     }
 
-    save_projects(projects);
+    save_projects(&projects);
 }
 
 pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {
