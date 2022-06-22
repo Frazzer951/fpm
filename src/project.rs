@@ -200,6 +200,7 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
                 if input.trim() == "y" {
                     // ask for the new directory
                     println!("Enter the new directory");
+                    input = String::new();
                     io::stdin().read_line(&mut input).unwrap();
                     project.directory = input.trim().to_string();
                 } else if input.trim() == "r" {
