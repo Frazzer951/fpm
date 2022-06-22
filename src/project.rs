@@ -293,7 +293,9 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
                     fs::create_dir_all(dir.clone())
                         .unwrap_or_else(|_| panic!("Failed to create the directory {}", dir.display()));
                     let options = fs_extra::dir::CopyOptions::new();
-                    fs_extra::move_items(&[cur_dir], dir.clone(), &options).unwrap();
+                    let mut to_dir = dir.clone();
+                    to_dir.pop();
+                    fs_extra::move_items(&[cur_dir], to_dir.clone(), &options).unwrap();
 
                     project.directory = String::from(dir.to_str().unwrap());
                     println!("Finished moving {}", project.name);
