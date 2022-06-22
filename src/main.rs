@@ -12,12 +12,11 @@ mod project;
 mod project_structure;
 mod settings;
 
-// region -- Project Constants
+// Project Constants
 const PROJECT_NAME: &str = "fpm";
 const CONFIG_FILENAME: &str = "config.toml";
 const PROJECT_DB_FILENAME: &str = "projects_db.json";
 const PROJECT_ENV_PREFIX: &str = "FPM";
-// endregion
 
 fn cli() -> Command<'static> {
     command!()
@@ -217,10 +216,13 @@ fn subcommand_list() -> App<'static> {
 }
 
 fn main() {
+    // Parse the command line arguments
     let matches = cli().get_matches();
 
+    // Load the config file
     let mut settings = Settings::new();
 
+    // Load the project database
     let mut projects = match file_handler::load_projects() {
         Ok(p) => p,
         Err(FileError::LoadingError) => {
@@ -235,8 +237,10 @@ fn main() {
         },
     };
 
+    // Match the subcommands
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
+            // Load all the variables
             let name = sub_matches.get_one::<String>("name").expect("REQUIRED").clone();
             let p_type = sub_matches.get_one::<String>("type").cloned();
             let category = sub_matches.get_one::<String>("category").cloned();
@@ -250,14 +254,17 @@ fn main() {
                 .cloned()
                 .collect::<Vec<_>>();
 
+            // Error if no directory is specified
             if settings.base_dir.is_none() && directory.is_none() {
                 eprintln!("No directory was specified, and the global Base Directory is not Set.");
                 eprintln!("Specify a directory in the command, or Set a global directory with the config command`");
                 return;
             }
 
+            // Set the directory to the global base directory if it was not specified
             let dir = directory.unwrap_or_else(|| settings.base_dir.as_ref().unwrap().clone());
 
+            // Create the project
             project::new_project(
                 &mut settings,
                 projects,
@@ -273,25 +280,30 @@ fn main() {
             );
         },
         Some(("add", sub_matches)) => {
+            // Load all the variables
             let name = sub_matches.get_one::<String>("name").expect("REQUIRED").clone();
             let directory = sub_matches.get_one::<String>("directory").expect("REQUIRED").clone();
             let p_type = sub_matches.get_one::<String>("type").cloned();
             let category = sub_matches.get_one::<String>("category").cloned();
 
+            // Add the project to the database
             project::add_project(projects, name, directory, p_type, category);
         },
         Some(("config", sub_matches)) => {
+            // Load the subcommands and pass it to the config handler
             let sub_command = sub_matches.subcommand();
 
             config_handler(&mut settings, sub_command);
         },
         Some(("project", sub_matches)) => {
+            // Load the subcommands and pass it to the project handler
             let sub_command = sub_matches.subcommand();
             let project_name = sub_matches
                 .get_one::<String>("project_name")
                 .expect("Has Default Value")
                 .clone();
 
+            // Make sure the project exists and offer possible fixes if it doesn't
             let project_names = project::get_similar(&projects, &project_name);
             if project_name != "*" && project_names.0 != 0 {
                 println!("No project with the name {} was found", project_name);
@@ -302,6 +314,7 @@ fn main() {
             project::project_handler(&mut projects, project_name, settings, sub_command);
         },
         Some(("list", sub_matches)) => {
+            // Load the filter and print the projects
             let filter = sub_matches.get_one::<Regex>("filter").cloned();
             for project in projects {
                 if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
@@ -316,9 +329,11 @@ fn main() {
 fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>) {
     match command {
         Some(("set", sub_matches)) => {
+            // Load the setting and value
             let setting = sub_matches.get_one::<String>("setting").expect("REQUIRED").clone();
             let value = sub_matches.get_one::<String>("value").expect("REQUIRED").clone();
 
+            // Set the specified setting
             match setting.as_str() {
                 "base_dir" => {
                     settings.base_dir = Some(value);

@@ -59,14 +59,17 @@ pub struct TemplateVars {
 }
 
 pub fn load_template(settings: &Settings, project: &mut Folder, mut template_name: String) -> Vec<String> {
+    // Get the template directory
     let mut template_dir = PathBuf::from(settings.template_dir.clone().unwrap());
 
     // make sure path exists
     fs::create_dir_all(template_dir.clone()).unwrap();
 
+    // Get the template file
     template_name.push_str(".yaml");
     template_dir.push(template_name.clone());
 
+    // Load the file
     let contents = match fs::read_to_string(&template_dir) {
         Ok(c) => c,
         Err(_) => {
@@ -75,6 +78,7 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
         },
     };
 
+    // Parse the file
     let template: Template = match serde_yaml::from_str(&contents) {
         Ok(d) => d,
         Err(err) => {
@@ -86,6 +90,7 @@ pub fn load_template(settings: &Settings, project: &mut Folder, mut template_nam
         },
     };
 
+    // Add the template to the project
     project.sub_folders.extend(template.folders);
     project.files.extend(template.files);
     project.commands.extend(template.commands);

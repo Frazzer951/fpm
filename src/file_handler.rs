@@ -41,15 +41,18 @@ pub struct Project {
 // endregion
 
 pub fn load_projects() -> Result<Vec<Project>> {
+    // Get the directory of the project database file
     let mut projects_dir = dirs::config_dir().unwrap();
     projects_dir.push(PROJECT_NAME);
     projects_dir.push(PROJECT_DB_FILENAME);
 
+    // Load the file
     let contents = match fs::read_to_string(projects_dir) {
         Ok(c) => Ok(c),
         Err(_) => Err(FileError::LoadingError),
     }?;
 
+    // Parse the file
     match serde_json::from_str(&contents) {
         Ok(d) => Ok(d),
         Err(_) => Err(FileError::ParsingError),
@@ -57,6 +60,7 @@ pub fn load_projects() -> Result<Vec<Project>> {
 }
 
 pub fn save_projects(projects: Vec<Project>) {
+    // Get the directory of the project database file
     let mut projects_dir = dirs::config_dir().unwrap();
     projects_dir.push(PROJECT_NAME);
 
