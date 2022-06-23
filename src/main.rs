@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::process::exit;
 
-use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
+use clap::{command, App, Arg, ArgAction, ArgGroup, ArgMatches, Command};
 use path_absolutize::Absolutize;
 use regex::Regex;
 
@@ -149,7 +149,31 @@ fn subcommand_project() -> App<'static> {
         )
         .subcommand(
             Command::new("verify")
-                .about("Verify that the project in the project database are where the project directory specifies"),
+                .about("Verify that the project in the project database are where the project directory specifies")
+                .args(
+                    &[
+                        Arg::new("list")
+                            .short('l')
+                            .long("list")
+                            .action(ArgAction::SetTrue)
+                            .help("List out project that don't pass verification"),
+                        Arg::new("remove")
+                            .short('r')
+                            .long("remove")
+                            .action(ArgAction::SetTrue)
+                            .help("Remove projects that don't pass verification without warning"),
+                        Arg::new("interactive")
+                            .short('i')
+                            .long("interactive")
+                            .action(ArgAction::SetTrue)
+                            .help("Interactive mode"),
+                    ],
+                )
+                .group(
+                    ArgGroup::new("verify_options")
+                        .args(&["list", "remove", "interactive"])
+                        .required(true),
+                ),
         )
         .subcommand(
             Command::new("refactor")

@@ -8,6 +8,14 @@ use strsim::osa_distance;
 
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
+#[derive(Debug)]
+pub struct VerifyFlags {
+    list:           bool,
+    remove_invalid: bool,
+    interactive:    bool,
+}
+
+#[derive(Debug)]
 pub struct RefactorFlags {
     dry_run:     bool,
     force:       bool,
@@ -21,8 +29,18 @@ pub fn project_handler(
     command: Option<(&str, &ArgMatches)>,
 ) {
     match command {
-        Some(("verify", _sub_matches)) => {
-            verify_projects(projects.to_owned(), project_name);
+        Some(("verify", sub_matches)) => {
+            let list = sub_matches.get_one::<bool>("list").cloned().expect("BOOL VALUE");
+            let remove = sub_matches.get_one::<bool>("remove").cloned().expect("BOOL VALUE");
+            let interactive = sub_matches.get_one::<bool>("interactive").cloned().expect("BOOL VALUE");
+
+            let flags = VerifyFlags {
+                list,
+                remove_invalid: remove,
+                interactive,
+            };
+
+            verify_projects(projects.to_owned(), project_name, flags);
         },
         Some(("refactor", sub_matches)) => {
             let dry_run = sub_matches.get_one::<bool>("dry-run").cloned().expect("BOOL VALUE");
@@ -216,7 +234,7 @@ pub fn new_project(
     }
 }
 
-pub fn verify_projects(mut projects: Vec<Project>, name: String) {
+pub fn verify_projects(mut projects: Vec<Project>, name: String, flags: VerifyFlags) {
     let mut projects_to_remove = vec![];
 
     for mut project in &mut projects {
@@ -227,23 +245,31 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
                     "{} - The directory `{}` does not exist",
                     project.name, project.directory
                 );
-                // ask if the user wishes to modify this project
-                let mut input = String::new();
-                println!("Do you wish to modify this project? (y/n/r)");
-                io::stdin().read_line(&mut input).unwrap();
-                if input.trim() == "y" {
-                    // ask for the new directory
-                    println!("Enter the new directory");
-                    input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
-                    project.directory = input.trim().to_string();
-                } else if input.trim() == "r" {
-                    println!("Are you sure you want to remove this projects? (y/n)");
-                    input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
-                    if input.trim() == "y" {
-                        // remove project from projects
+                if !flags.list {
+                    if flags.remove_invalid {
                         projects_to_remove.push(project.clone());
+                    } else if flags.interactive {
+                        // ask if the user wishes to modify this project
+                        let mut input = String::new();
+                        println!("Do you wish to modify this project? (y/n/r)");
+                        io::stdin().read_line(&mut input).unwrap();
+                        if input.trim() == "y" {
+                            // ask for the new directory
+                            println!("Enter the new directory");
+                            input = String::new();
+                            io::stdin().read_line(&mut input).unwrap();
+                            project.directory = input.trim().to_string();
+                        } else if input.trim() == "r" {
+                            println!("Are you sure you want to remove this projects? (y/n)");
+                            input = String::new();
+                            io::stdin().read_line(&mut input).unwrap();
+                            if input.trim() == "y" {
+                                // remove project from projects
+                                projects_to_remove.push(project.clone());
+                            }
+                        }
+                    } else {
+                        panic!("How did you get here?");
                     }
                 }
             }
