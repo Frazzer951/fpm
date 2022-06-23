@@ -14,6 +14,7 @@ mod file_handler;
 mod project;
 mod project_structure;
 mod settings;
+mod utils;
 
 // Project Constants
 const PROJECT_NAME: &str = "fpm";

@@ -6,6 +6,7 @@ use std::{fs, io};
 use clap::ArgMatches;
 use strsim::osa_distance;
 
+use crate::utils::move_folder;
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
 #[derive(Debug)]
@@ -342,14 +343,12 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
                         }
                     }
 
-                    fs::create_dir_all(dir.clone())
-                        .unwrap_or_else(|_| panic!("Failed to create the directory {}", dir.display()));
-                    let options = fs_extra::dir::CopyOptions::new();
                     let mut to_dir = dir.clone();
                     to_dir.pop();
-                    fs_extra::move_items(&[cur_dir], to_dir.clone(), &options).unwrap();
+                    move_folder(cur_dir, to_dir).unwrap();
 
                     project.directory = String::from(dir.to_str().unwrap());
+
                     println!("Finished moving {}", project.name);
                 } else {
                     eprintln!(
