@@ -1,17 +1,38 @@
 use std::collections::{HashMap, HashSet};
+use std::io;
 use std::path::PathBuf;
 use std::process::{exit, Command};
-use std::{fs, io};
 
 use clap::ArgMatches;
+use fs_err as fs;
 use strsim::osa_distance;
 
+use crate::utils::move_folder;
 use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
 
+#[derive(Debug)]
+pub struct VerifyFlags {
+    list:           bool,
+    remove_invalid: bool,
+    interactive:    bool,
+}
+
+#[derive(Debug)]
 pub struct RefactorFlags {
     dry_run:     bool,
     force:       bool,
     interactive: bool,
+    verbose:     bool,
+}
+
+#[derive(Debug)]
+pub struct EditOptions {
+    name:            Option<String>,
+    directory:       Option<String>,
+    p_type:          Option<String>,
+    category:        Option<String>,
+    remove_type:     bool,
+    remove_category: bool,
 }
 
 pub fn project_handler(
@@ -21,13 +42,24 @@ pub fn project_handler(
     command: Option<(&str, &ArgMatches)>,
 ) {
     match command {
-        Some(("verify", _sub_matches)) => {
-            verify_projects(projects.to_owned(), project_name);
+        Some(("verify", sub_matches)) => {
+            let list = sub_matches.get_one::<bool>("list").cloned().expect("BOOL VALUE");
+            let remove = sub_matches.get_one::<bool>("remove").cloned().expect("BOOL VALUE");
+            let interactive = sub_matches.get_one::<bool>("interactive").cloned().expect("BOOL VALUE");
+
+            let flags = VerifyFlags {
+                list,
+                remove_invalid: remove,
+                interactive,
+            };
+
+            verify_projects(projects.to_owned(), project_name, flags);
         },
         Some(("refactor", sub_matches)) => {
             let dry_run = sub_matches.get_one::<bool>("dry-run").cloned().expect("BOOL VALUE");
             let force = sub_matches.get_one::<bool>("force").cloned().expect("BOOL VALUE");
             let interactive = sub_matches.get_one::<bool>("interactive").cloned().expect("BOOL VALUE");
+            let verbose = sub_matches.get_one::<bool>("verbose").cloned().expect("BOOL VALUE");
             let directory = sub_matches.get_one::<String>("directory").cloned();
 
             if settings.base_dir.is_none() && directory.is_none() {
@@ -46,6 +78,7 @@ pub fn project_handler(
                     dry_run,
                     force,
                     interactive,
+                    verbose,
                 },
             );
         },
@@ -54,20 +87,36 @@ pub fn project_handler(
             let directory = sub_matches.get_one::<String>("directory").cloned();
             let p_type = sub_matches.get_one::<String>("type").cloned();
             let category = sub_matches.get_one::<String>("category").cloned();
+            let remove_type = sub_matches.get_one::<bool>("remove_type").cloned().expect("BOOL VALUE");
+            let remove_category = sub_matches
+                .get_one::<bool>("remove_category")
+                .cloned()
+                .expect("BOOL VALUE");
 
             if project_name == "*" {
                 eprintln!("You must specify a project name to edit.");
                 exit(1);
             }
 
-            edit_project(projects.to_vec(), project_name, name, directory, p_type, category);
+            edit_project(
+                projects.to_vec(),
+                project_name,
+                EditOptions {
+                    name,
+                    directory,
+                    p_type,
+                    category,
+                    remove_type,
+                    remove_category,
+                },
+            );
         },
         _ => unreachable!(),
     }
 }
 
 pub fn add_project(
-    mut projects: Vec<Project>,
+    projects: &mut Vec<Project>,
     name: String,
     directory: String,
     p_type: Option<String>,
@@ -87,6 +136,40 @@ pub fn add_project(
         p_type,
     });
     save_projects(projects);
+}
+
+pub fn add_project_from_folder(
+    mut projects: Vec<Project>,
+    path: PathBuf,
+    p_type: Option<String>,
+    category: Option<String>,
+) {
+    // is there a folder at path?
+    if !std::path::Path::new(&path).exists() {
+        eprintln!("The directory `{}` specified does not exist", path.display());
+        exit(1);
+    }
+
+    for folder in fs::read_dir(path).unwrap() {
+        let folder = folder.unwrap();
+        let path = folder.path();
+        if path.is_dir() {
+            let name = path.file_name().unwrap().to_string_lossy().to_string();
+            let directory = path.to_str().unwrap().to_string();
+
+            // if there is a project with the same name, don't add it
+            if projects.iter().any(|p| p.name == name || p.directory == directory) {
+                continue;
+            }
+
+            println!("Would you like to add the folder `{}` ({})? (y/n):", name, directory);
+            let mut input = String::new();
+            io::stdin().read_line(&mut input).unwrap();
+            if input.trim() == "y" {
+                add_project(&mut projects, name, directory, p_type.clone(), category.clone());
+            }
+        }
+    }
 }
 
 pub fn new_project(
@@ -174,7 +257,7 @@ pub fn new_project(
         category:  project_vars.category.clone(),
         p_type:    project_vars.p_type.clone(),
     });
-    save_projects(projects);
+    save_projects(&projects);
 
     if open {
         // open dir
@@ -182,7 +265,7 @@ pub fn new_project(
     }
 }
 
-pub fn verify_projects(mut projects: Vec<Project>, name: String) {
+pub fn verify_projects(mut projects: Vec<Project>, name: String, flags: VerifyFlags) {
     let mut projects_to_remove = vec![];
 
     for mut project in &mut projects {
@@ -193,23 +276,31 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
                     "{} - The directory `{}` does not exist",
                     project.name, project.directory
                 );
-                // ask if the user wishes to modify this project
-                let mut input = String::new();
-                println!("Do you wish to modify this project? (y/n/r)");
-                io::stdin().read_line(&mut input).unwrap();
-                if input.trim() == "y" {
-                    // ask for the new directory
-                    println!("Enter the new directory");
-                    input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
-                    project.directory = input.trim().to_string();
-                } else if input.trim() == "r" {
-                    println!("Are you sure you want to remove this projects? (y/n)");
-                    input = String::new();
-                    io::stdin().read_line(&mut input).unwrap();
-                    if input.trim() == "y" {
-                        // remove project from projects
+                if !flags.list {
+                    if flags.remove_invalid {
                         projects_to_remove.push(project.clone());
+                    } else if flags.interactive {
+                        // ask if the user wishes to modify this project
+                        let mut input = String::new();
+                        println!("Do you wish to modify this project? (y/n/r)");
+                        io::stdin().read_line(&mut input).unwrap();
+                        if input.trim() == "y" {
+                            // ask for the new directory
+                            println!("Enter the new directory");
+                            input = String::new();
+                            io::stdin().read_line(&mut input).unwrap();
+                            project.directory = input.trim().to_string();
+                        } else if input.trim() == "r" {
+                            println!("Are you sure you want to remove this projects? (y/n)");
+                            input = String::new();
+                            io::stdin().read_line(&mut input).unwrap();
+                            if input.trim() == "y" {
+                                // remove project from projects
+                                projects_to_remove.push(project.clone());
+                            }
+                        }
+                    } else {
+                        panic!("How did you get here?");
                     }
                 }
             }
@@ -224,7 +315,7 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String) {
         }
         true
     });
-    save_projects(projects)
+    save_projects(&projects)
 }
 
 pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: String, flags: RefactorFlags) {
@@ -256,12 +347,10 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
                         }
                     }
 
-                    fs::create_dir_all(dir.clone())
-                        .unwrap_or_else(|_| panic!("Failed to create the directory {}", dir.display()));
-                    let options = fs_extra::dir::CopyOptions::new();
-                    fs_extra::move_items(&[cur_dir], dir.clone(), &options).unwrap();
+                    move_folder(cur_dir, dir.clone(), flags.verbose).unwrap();
 
                     project.directory = String::from(dir.to_str().unwrap());
+
                     println!("Finished moving {}", project.name);
                 } else {
                     eprintln!(
@@ -273,17 +362,10 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
             }
         }
     }
-    save_projects(projects);
+    save_projects(&projects);
 }
 
-fn edit_project(
-    mut projects: Vec<Project>,
-    project_name: String,
-    name: Option<String>,
-    directory: Option<String>,
-    p_type: Option<String>,
-    category: Option<String>,
-) {
+fn edit_project(mut projects: Vec<Project>, project_name: String, options: EditOptions) {
     let mut filtered_projects: Vec<&mut Project> = projects.iter_mut().filter(|p| p.name == project_name).collect();
     let project_index = if filtered_projects.len() > 1 {
         println!("More than one project found with the name {}", project_name);
@@ -303,20 +385,26 @@ fn edit_project(
         0
     };
 
-    if let Some(name) = name {
+    if let Some(name) = options.name {
         filtered_projects[project_index].name = name;
     }
-    if let Some(directory) = directory {
+    if let Some(directory) = options.directory {
         filtered_projects[project_index].directory = directory;
     }
-    if let Some(p_type) = p_type {
+    if let Some(p_type) = options.p_type {
         filtered_projects[project_index].p_type = Some(p_type);
     }
-    if let Some(category) = category {
+    if let Some(category) = options.category {
         filtered_projects[project_index].category = Some(category);
     }
+    if options.remove_type {
+        filtered_projects[project_index].p_type = None;
+    }
+    if options.remove_category {
+        filtered_projects[project_index].category = None;
+    }
 
-    save_projects(projects);
+    save_projects(&projects);
 }
 
 pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {

@@ -1,7 +1,8 @@
+use std::env;
 use std::path::PathBuf;
-use std::{env, fs};
 
 use config::{Config, Environment, File};
+use fs_err as fs;
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
@@ -15,7 +16,7 @@ pub struct Settings {
     #[serde(default = "default_git_command")]
     pub git_command:  String,
     #[serde(skip_serializing)]
-    config_dir:       String,
+    pub config_dir:   String,
 }
 
 fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }

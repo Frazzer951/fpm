@@ -1,9 +1,12 @@
+use std::path::PathBuf;
 use std::process::exit;
 
-use clap::{command, App, Arg, ArgAction, ArgMatches, Command};
+use clap::{command, App, Arg, ArgAction, ArgGroup, ArgMatches, Command};
+use path_absolutize::Absolutize;
 use regex::Regex;
 
 use crate::file_handler::{save_projects, FileError, Project};
+use crate::project::add_project_from_folder;
 use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
@@ -11,6 +14,7 @@ mod file_handler;
 mod project;
 mod project_structure;
 mod settings;
+mod utils;
 
 // Project Constants
 const PROJECT_NAME: &str = "fpm";
@@ -28,6 +32,7 @@ fn cli() -> Command<'static> {
             subcommand_config(),
             subcommand_project(),
             subcommand_list(),
+            subcommand_add_folder(),
         ])
 }
 
@@ -128,6 +133,7 @@ fn subcommand_config() -> App<'static> {
                 ),
         )
         .subcommand(Command::new("init").about("Initialize the config file with default options"))
+        .subcommand(Command::new("open").about("Open the config directory"))
 }
 
 fn subcommand_project() -> App<'static> {
@@ -144,7 +150,31 @@ fn subcommand_project() -> App<'static> {
         )
         .subcommand(
             Command::new("verify")
-                .about("Verify that the project in the project database are where the project directory specifies"),
+                .about("Verify that the project in the project database are where the project directory specifies")
+                .args(
+                    &[
+                        Arg::new("list")
+                            .short('l')
+                            .long("list")
+                            .action(ArgAction::SetTrue)
+                            .help("List out project that don't pass verification"),
+                        Arg::new("remove")
+                            .short('r')
+                            .long("remove")
+                            .action(ArgAction::SetTrue)
+                            .help("Remove projects that don't pass verification without warning"),
+                        Arg::new("interactive")
+                            .short('i')
+                            .long("interactive")
+                            .action(ArgAction::SetTrue)
+                            .help("Interactive mode"),
+                    ],
+                )
+                .group(
+                    ArgGroup::new("verify_options")
+                        .args(&["list", "remove", "interactive"])
+                        .required(true),
+                ),
         )
         .subcommand(
             Command::new("refactor")
@@ -173,6 +203,11 @@ fn subcommand_project() -> App<'static> {
                             .help(
                                 "Manually specify the base directory to use. -- Overrides base_dir specified in config",
                             ),
+                        Arg::new("verbose")
+                            .short('v')
+                            .long("verbose")
+                            .action(ArgAction::SetTrue)
+                            .help("Print out what files are being moved"),
                     ],
                 ),
         )
@@ -199,6 +234,16 @@ fn subcommand_project() -> App<'static> {
                         .long("category")
                         .takes_value(true)
                         .help("Change the project's category"),
+                    Arg::new("remove_type")
+                        .long("remove-type")
+                        .conflicts_with("type")
+                        .action(ArgAction::SetTrue)
+                        .help("Remove the project's type"),
+                    Arg::new("remove_category")
+                        .long("remove-category")
+                        .conflicts_with("category")
+                        .action(ArgAction::SetTrue)
+                        .help("Remove the project's category"),
                 ],
             ),
         )
@@ -213,6 +258,28 @@ fn subcommand_list() -> App<'static> {
             .value_parser(clap::value_parser!(Regex))
             .help("A regex filter used to filter names when displaying projects"),
     )
+}
+
+fn subcommand_add_folder() -> App<'static> {
+    Command::new("add-folder")
+        .about("Interactively add folders from the specified directory")
+        .args(&[
+            Arg::new("path")
+                .takes_value(true)
+                .required(true)
+                .value_parser(clap::value_parser!(PathBuf))
+                .help("The Path to the directory to add folders from"),
+            Arg::new("type")
+                .short('t')
+                .long("type")
+                .takes_value(true)
+                .help("Project Type"),
+            Arg::new("category")
+                .short('c')
+                .long("category")
+                .takes_value(true)
+                .help("Project Category"),
+        ])
 }
 
 fn main() {
@@ -287,7 +354,7 @@ fn main() {
             let category = sub_matches.get_one::<String>("category").cloned();
 
             // Add the project to the database
-            project::add_project(projects, name, directory, p_type, category);
+            project::add_project(&mut projects, name, directory, p_type, category);
         },
         Some(("config", sub_matches)) => {
             // Load the subcommands and pass it to the config handler
@@ -322,6 +389,15 @@ fn main() {
                 }
             }
         },
+        Some(("add-folder", sub_matches)) => {
+            // Load the variables
+            let input_path = sub_matches.get_one::<PathBuf>("path").expect("REQUIRED").clone();
+            let path = input_path.absolutize().unwrap().to_path_buf();
+            let p_type = sub_matches.get_one::<String>("type").cloned();
+            let category = sub_matches.get_one::<String>("category").cloned();
+
+            add_project_from_folder(projects, path, p_type, category);
+        },
         _ => unreachable!(),
     }
 }
@@ -347,6 +423,12 @@ fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>)
             settings.save();
         },
         Some(("init", _sub_matches)) => settings.save(),
+        Some(("open", _sub_matches)) => {
+            let mut config_dir = PathBuf::from(settings.config_dir.clone());
+            config_dir.pop();
+
+            opener::open(config_dir).expect("Failed to open the directory")
+        },
         _ => unreachable!(),
     }
 }

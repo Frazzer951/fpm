@@ -1,8 +1,8 @@
-use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::{exit, Command};
 
+use fs_err as fs;
 use serde::Deserialize;
 
 use crate::Settings;
