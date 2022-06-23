@@ -22,6 +22,7 @@ pub struct RefactorFlags {
     dry_run:     bool,
     force:       bool,
     interactive: bool,
+    verbose:     bool,
 }
 
 #[derive(Debug)]
@@ -58,6 +59,7 @@ pub fn project_handler(
             let dry_run = sub_matches.get_one::<bool>("dry-run").cloned().expect("BOOL VALUE");
             let force = sub_matches.get_one::<bool>("force").cloned().expect("BOOL VALUE");
             let interactive = sub_matches.get_one::<bool>("interactive").cloned().expect("BOOL VALUE");
+            let verbose = sub_matches.get_one::<bool>("verbose").cloned().expect("BOOL VALUE");
             let directory = sub_matches.get_one::<String>("directory").cloned();
 
             if settings.base_dir.is_none() && directory.is_none() {
@@ -76,6 +78,7 @@ pub fn project_handler(
                     dry_run,
                     force,
                     interactive,
+                    verbose,
                 },
             );
         },
@@ -344,9 +347,7 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
                         }
                     }
 
-                    let mut to_dir = dir.clone();
-                    to_dir.pop();
-                    move_folder(cur_dir, to_dir).unwrap();
+                    move_folder(cur_dir, dir.clone(), flags.verbose).unwrap();
 
                     project.directory = String::from(dir.to_str().unwrap());
 

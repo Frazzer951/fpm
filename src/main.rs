@@ -203,6 +203,11 @@ fn subcommand_project() -> App<'static> {
                             .help(
                                 "Manually specify the base directory to use. -- Overrides base_dir specified in config",
                             ),
+                        Arg::new("verbose")
+                            .short('v')
+                            .long("verbose")
+                            .action(ArgAction::SetTrue)
+                            .help("Print out what files are being moved"),
                     ],
                 ),
         )
