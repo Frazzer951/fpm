@@ -15,7 +15,7 @@ pub struct Settings {
     #[serde(default = "default_git_command")]
     pub git_command:  String,
     #[serde(skip_serializing)]
-    config_dir:       String,
+    pub config_dir:   String,
 }
 
 fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }

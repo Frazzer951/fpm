@@ -132,6 +132,7 @@ fn subcommand_config() -> App<'static> {
                 ),
         )
         .subcommand(Command::new("init").about("Initialize the config file with default options"))
+        .subcommand(Command::new("open").about("Open the config directory"))
 }
 
 fn subcommand_project() -> App<'static> {
@@ -382,6 +383,12 @@ fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>)
             settings.save();
         },
         Some(("init", _sub_matches)) => settings.save(),
+        Some(("open", _sub_matches)) => {
+            let mut config_dir = PathBuf::from(settings.config_dir.clone());
+            config_dir.pop();
+
+            opener::open(config_dir).expect("Failed to open the directory")
+        },
         _ => unreachable!(),
     }
 }
