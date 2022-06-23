@@ -228,6 +228,16 @@ fn subcommand_project() -> App<'static> {
                         .long("category")
                         .takes_value(true)
                         .help("Change the project's category"),
+                    Arg::new("remove_type")
+                        .long("remove-type")
+                        .conflicts_with("type")
+                        .action(ArgAction::SetTrue)
+                        .help("Remove the project's type"),
+                    Arg::new("remove_category")
+                        .long("remove-category")
+                        .conflicts_with("category")
+                        .action(ArgAction::SetTrue)
+                        .help("Remove the project's category"),
                 ],
             ),
         )
