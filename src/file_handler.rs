@@ -1,5 +1,6 @@
-use std::{fmt, fs};
+use std::fmt;
 
+use fs_err as fs;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 

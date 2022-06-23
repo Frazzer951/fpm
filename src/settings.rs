@@ -1,7 +1,8 @@
+use std::env;
 use std::path::PathBuf;
-use std::{env, fs};
 
 use config::{Config, Environment, File};
+use fs_err as fs;
 use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};

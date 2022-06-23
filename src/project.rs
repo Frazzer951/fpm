@@ -1,9 +1,10 @@
 use std::collections::{HashMap, HashSet};
+use std::io;
 use std::path::PathBuf;
 use std::process::{exit, Command};
-use std::{fs, io};
 
 use clap::ArgMatches;
+use fs_err as fs;
 use strsim::osa_distance;
 
 use crate::utils::move_folder;
