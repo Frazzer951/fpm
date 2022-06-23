@@ -1,5 +1,46 @@
 # CHANGELOG
 
+## [v0.4.0](https://github.com/Frazzer951/fpm/releases/tag/v0.4.0) - 2022-06-23 19:58:47
+
+## What's Changed
+* v0.4.0 Development by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/45
+
+
+**Full Changelog**: https://github.com/Frazzer951/fpm/compare/v0.3.0...v0.4.0
+
+### Feature
+
+- general:
+  - add options to print what files are getting moved ([9465dbe](https://github.com/Frazzer951/fpm/commit/9465dbe91ecbd99b27c9f51a9b07f9dd4d19d786)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Add ability to move and copy folders recursively ([b7b431a](https://github.com/Frazzer951/fpm/commit/b7b431a0b0495808edeffc7e880d5273dde4338d)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Add options to remove category and type when editing ([22ebb43](https://github.com/Frazzer951/fpm/commit/22ebb4300a58fcc837e7512b7fe02ad4061716a7)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Add options to verify to determin operation ([d71d60e](https://github.com/Frazzer951/fpm/commit/d71d60e0fb864204012629e047bfd5405a45d263)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - add command to open config dir ([1fe6846](https://github.com/Frazzer951/fpm/commit/1fe684689d41bd0e4ecfc507e824bd27c930f0fd)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - add command to add folders from a directory ([a64b06e](https://github.com/Frazzer951/fpm/commit/a64b06e2433dcc27e508a67a652e4aa99ab271c2)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+
+### Bug Fixes
+
+- general:
+  - Fix refactor to be able to move .git folders ([54c938a](https://github.com/Frazzer951/fpm/commit/54c938ac36fa4c1501d5752a5edbd28346a75ba0)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Fix the move with refactor to not place the folder inside a folder with its own name ([a90c7a2](https://github.com/Frazzer951/fpm/commit/a90c7a25ee00b88df62f64cc9435783a574703cd)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+
+### Continuous Integration
+
+- general:
+  - Remove unessecary WIP workflow ([097a238](https://github.com/Frazzer951/fpm/commit/097a2380f8090c59505a96eca2604d4028a7d0c4)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - update dependabot config ([462c706](https://github.com/Frazzer951/fpm/commit/462c706df09a8e12509c88728362deede6373a15)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Format workflows and add devlop branch to testing ([bf3a984](https://github.com/Frazzer951/fpm/commit/bf3a984415242dfb314a3c3743858ca65e04cdc1)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+
+### Chore
+
+- general:
+  - Refactor Readme ([a242cb6](https://github.com/Frazzer951/fpm/commit/a242cb6e1e1be01bc79c1f3359154da85820856b)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - update dependecies ([a5a500f](https://github.com/Frazzer951/fpm/commit/a5a500f0373b9aa800082118c8cb408530231aa0)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Cargo Version to 0.4.0 ([a3f07b2](https://github.com/Frazzer951/fpm/commit/a3f07b26a349c03b9ededcb5da4aa35bf94b57c0)) ([#45](https://github.com/Frazzer951/fpm/pull/45))
+  - Update Contributing section in readme ([dcb665e](https://github.com/Frazzer951/fpm/commit/dcb665e9e20d6de2658985a49da7bee18d930326))
+  - Update Git Ignore ([69bf09b](https://github.com/Frazzer951/fpm/commit/69bf09bc8a0bc1b1f90a7a402904406a25d5916f))
+  - Remove Cargo Lock ([996c04e](https://github.com/Frazzer951/fpm/commit/996c04e22a39687a64801886a13cff3666ca3d96))
+
 ## [v0.3.0](https://github.com/Frazzer951/fpm/releases/tag/v0.3.0) - 2022-06-22 03:15:28
 
 ## What's Changed
