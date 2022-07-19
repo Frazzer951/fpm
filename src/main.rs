@@ -125,7 +125,7 @@ fn subcommand_config() -> App<'static> {
                     Arg::new("setting")
                         .required(true)
                         .takes_value(true)
-                        .value_parser(["base_dir", "template_dir"])
+                        .value_parser(["base_dir", "template_dir", "git_command"])
                         .help("The setting to modify"),
                     Arg::new("value").required(true).help("The modified value"),
                 ]),
@@ -406,6 +406,9 @@ fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>)
                 },
                 "template_dir" => {
                     settings.template_dir = Some(value);
+                },
+                "git_command" => {
+                    settings.git_command = value;
                 },
                 _ => unreachable!(),
             }
