@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
 
-#[derive(Deserialize, Serialize, Default, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Settings {
     #[serde(default)]
     pub base_dir:     Option<String>,
@@ -21,6 +21,17 @@ pub struct Settings {
 
 fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }
 
+impl Default for Settings {
+    fn default() -> Self {
+        Settings {
+            base_dir:     None,
+            template_dir: None,
+            git_command:  default_git_command(),
+            config_dir:   String::from(""),
+        }
+    }
+}
+
 impl Settings {
     pub fn new() -> Self {
         let config_dir = env::var(format!("{}_CONFIG_DIR", PROJECT_ENV_PREFIX)).unwrap_or_else(|_| {
@@ -29,6 +40,18 @@ impl Settings {
             config_dir.push(CONFIG_FILENAME);
             String::from(config_dir.to_str().unwrap())
         });
+
+        // Create config file if it doesn't exist
+        if !PathBuf::from(config_dir.clone()).exists() {
+            let mut parent_dir = PathBuf::from(config_dir.clone());
+            parent_dir.pop();
+            fs::create_dir_all(&parent_dir).unwrap();
+            let settings = Settings {
+                config_dir: config_dir.clone(),
+                ..Default::default()
+            };
+            settings.save();
+        }
 
         let s = Config::builder()
             .add_source(File::with_name(config_dir.as_str()))

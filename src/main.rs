@@ -121,16 +121,14 @@ fn subcommand_config() -> App<'static> {
             Command::new("set")
                 .about("Set the value of a config option")
                 .arg_required_else_help(true)
-                .args(
-                    &[
-                        Arg::new("setting")
-                            .required(true)
-                            .takes_value(true)
-                            .value_parser(["base_dir", "template_dir"])
-                            .help("The setting to modify"),
-                        Arg::new("value").required(true).help("The modified value"),
-                    ],
-                ),
+                .args(&[
+                    Arg::new("setting")
+                        .required(true)
+                        .takes_value(true)
+                        .value_parser(["base_dir", "template_dir", "git_command"])
+                        .help("The setting to modify"),
+                    Arg::new("value").required(true).help("The modified value"),
+                ]),
         )
         .subcommand(Command::new("init").about("Initialize the config file with default options"))
         .subcommand(Command::new("open").about("Open the config directory"))
@@ -151,25 +149,23 @@ fn subcommand_project() -> App<'static> {
         .subcommand(
             Command::new("verify")
                 .about("Verify that the project in the project database are where the project directory specifies")
-                .args(
-                    &[
-                        Arg::new("list")
-                            .short('l')
-                            .long("list")
-                            .action(ArgAction::SetTrue)
-                            .help("List out project that don't pass verification"),
-                        Arg::new("remove")
-                            .short('r')
-                            .long("remove")
-                            .action(ArgAction::SetTrue)
-                            .help("Remove projects that don't pass verification without warning"),
-                        Arg::new("interactive")
-                            .short('i')
-                            .long("interactive")
-                            .action(ArgAction::SetTrue)
-                            .help("Interactive mode"),
-                    ],
-                )
+                .args(&[
+                    Arg::new("list")
+                        .short('l')
+                        .long("list")
+                        .action(ArgAction::SetTrue)
+                        .help("List out project that don't pass verification"),
+                    Arg::new("remove")
+                        .short('r')
+                        .long("remove")
+                        .action(ArgAction::SetTrue)
+                        .help("Remove projects that don't pass verification without warning"),
+                    Arg::new("interactive")
+                        .short('i')
+                        .long("interactive")
+                        .action(ArgAction::SetTrue)
+                        .help("Interactive mode"),
+                ])
                 .group(
                     ArgGroup::new("verify_options")
                         .args(&["list", "remove", "interactive"])
@@ -179,73 +175,67 @@ fn subcommand_project() -> App<'static> {
         .subcommand(
             Command::new("refactor")
                 .about("Move folders to the correct directory based on their name, category, and type")
-                .args(
-                    &[
-                        Arg::new("dry-run")
-                            .short('n')
-                            .long("dry-run")
-                            .action(ArgAction::SetTrue)
-                            .help("Do not move any folders yet just see what would change"),
-                        Arg::new("force")
-                            .short('f')
-                            .long("force")
-                            .action(ArgAction::SetTrue)
-                            .help("Required to move folders when not using Interactive mode"),
-                        Arg::new("interactive")
-                            .short('i')
-                            .long("interactive")
-                            .action(ArgAction::SetTrue)
-                            .help("Ask the user for each folder if it should move"),
-                        Arg::new("directory")
-                            .short('d')
-                            .long("directory")
-                            .takes_value(true)
-                            .help(
-                                "Manually specify the base directory to use. -- Overrides base_dir specified in config",
-                            ),
-                        Arg::new("verbose")
-                            .short('v')
-                            .long("verbose")
-                            .action(ArgAction::SetTrue)
-                            .help("Print out what files are being moved"),
-                    ],
-                ),
-        )
-        .subcommand(
-            Command::new("edit").about("edit a project").args(
-                &[
-                    Arg::new("name")
+                .args(&[
+                    Arg::new("dry-run")
                         .short('n')
-                        .long("name")
-                        .takes_value(true)
-                        .help("Change the project's name"),
+                        .long("dry-run")
+                        .action(ArgAction::SetTrue)
+                        .help("Do not move any folders yet just see what would change"),
+                    Arg::new("force")
+                        .short('f')
+                        .long("force")
+                        .action(ArgAction::SetTrue)
+                        .help("Required to move folders when not using Interactive mode"),
+                    Arg::new("interactive")
+                        .short('i')
+                        .long("interactive")
+                        .action(ArgAction::SetTrue)
+                        .help("Ask the user for each folder if it should move"),
                     Arg::new("directory")
                         .short('d')
                         .long("directory")
                         .takes_value(true)
-                        .help("Change the project's directory. DOES NOT MOVE THE PROJECT"),
-                    Arg::new("type")
-                        .short('t')
-                        .long("type")
-                        .takes_value(true)
-                        .help("Change the project's type"),
-                    Arg::new("category")
-                        .short('c')
-                        .long("category")
-                        .takes_value(true)
-                        .help("Change the project's category"),
-                    Arg::new("remove_type")
-                        .long("remove-type")
-                        .conflicts_with("type")
+                        .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
+                    Arg::new("verbose")
+                        .short('v')
+                        .long("verbose")
                         .action(ArgAction::SetTrue)
-                        .help("Remove the project's type"),
-                    Arg::new("remove_category")
-                        .long("remove-category")
-                        .conflicts_with("category")
-                        .action(ArgAction::SetTrue)
-                        .help("Remove the project's category"),
-                ],
-            ),
+                        .help("Print out what files are being moved"),
+                ]),
+        )
+        .subcommand(
+            Command::new("edit").about("edit a project").args(&[
+                Arg::new("name")
+                    .short('n')
+                    .long("name")
+                    .takes_value(true)
+                    .help("Change the project's name"),
+                Arg::new("directory")
+                    .short('d')
+                    .long("directory")
+                    .takes_value(true)
+                    .help("Change the project's directory. DOES NOT MOVE THE PROJECT"),
+                Arg::new("type")
+                    .short('t')
+                    .long("type")
+                    .takes_value(true)
+                    .help("Change the project's type"),
+                Arg::new("category")
+                    .short('c')
+                    .long("category")
+                    .takes_value(true)
+                    .help("Change the project's category"),
+                Arg::new("remove_type")
+                    .long("remove-type")
+                    .conflicts_with("type")
+                    .action(ArgAction::SetTrue)
+                    .help("Remove the project's type"),
+                Arg::new("remove_category")
+                    .long("remove-category")
+                    .conflicts_with("category")
+                    .action(ArgAction::SetTrue)
+                    .help("Remove the project's category"),
+            ]),
         )
 }
 
@@ -416,6 +406,9 @@ fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>)
                 },
                 "template_dir" => {
                     settings.template_dir = Some(value);
+                },
+                "git_command" => {
+                    settings.git_command = value;
                 },
                 _ => unreachable!(),
             }
