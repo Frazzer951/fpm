@@ -235,6 +235,11 @@ fn subcommand_project() -> App<'static> {
                     .conflicts_with("category")
                     .action(ArgAction::SetTrue)
                     .help("Remove the project's category"),
+                Arg::new("refactor")
+                    .long("refactor")
+                    .short('r')
+                    .action(ArgAction::SetTrue)
+                    .help("Refactor the project after editing it"),
             ]),
         )
 }
