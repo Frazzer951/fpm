@@ -36,11 +36,13 @@ jobs:
       - name: Install cargo-tarpaulin
         uses: actions-rs/cargo@v1
         with:
-          command: install cargo-tarpaulin
+          command: install
+          args: cargo-tarpaulin
       - name: Run cargo-tarpaulin
         uses: actions-rs/cargo@v1
         with:
-          command: tarpaulin -o xml
+          command: tarpaulin
+          args: -o xml
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3
         with:
