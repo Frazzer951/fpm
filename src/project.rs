@@ -7,8 +7,9 @@ use clap::ArgMatches;
 use fs_err as fs;
 use strsim::osa_distance;
 
+use crate::templates::{build_folder, Folder, TemplateVars, Templates};
 use crate::utils::move_folder;
-use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
+use crate::{save_projects, Project, Settings};
 
 #[derive(Debug)]
 pub struct VerifyFlags {
@@ -207,11 +208,11 @@ pub fn new_project(
         settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
     }
 
-    let mut user_template_vars = HashSet::new();
+    // Load templates from the template directory
+    let template_files = Templates::new(settings);
 
-    for template in templates {
-        user_template_vars.extend(load_template(settings, &mut project, template.clone()).into_iter());
-    }
+    let mut user_template_vars = HashSet::new();
+    user_template_vars.extend(template_files.load_templates(templates, &mut project));
 
     // create project folders
     fs::create_dir_all(project_path.clone()).unwrap();
