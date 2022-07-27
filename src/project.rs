@@ -33,6 +33,7 @@ pub struct EditOptions {
     category:        Option<String>,
     remove_type:     bool,
     remove_category: bool,
+    refactor:        bool,
 }
 
 pub fn project_handler(
@@ -92,6 +93,7 @@ pub fn project_handler(
                 .get_one::<bool>("remove_category")
                 .cloned()
                 .expect("BOOL VALUE");
+            let refactor = sub_matches.get_one::<bool>("refactor").cloned().expect("BOOL VALUE");
 
             if project_name == "*" {
                 eprintln!("You must specify a project name to edit.");
@@ -101,6 +103,7 @@ pub fn project_handler(
             edit_project(
                 projects.to_vec(),
                 project_name,
+                settings,
                 EditOptions {
                     name,
                     directory,
@@ -108,6 +111,7 @@ pub fn project_handler(
                     category,
                     remove_type,
                     remove_category,
+                    refactor,
                 },
             );
         },
@@ -365,7 +369,7 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
     save_projects(&projects);
 }
 
-fn edit_project(mut projects: Vec<Project>, project_name: String, options: EditOptions) {
+fn edit_project(mut projects: Vec<Project>, project_name: String, settings: Settings, options: EditOptions) {
     let mut filtered_projects: Vec<&mut Project> = projects.iter_mut().filter(|p| p.name == project_name).collect();
     let project_index = if filtered_projects.len() > 1 {
         println!("More than one project found with the name {}", project_name);
@@ -405,6 +409,26 @@ fn edit_project(mut projects: Vec<Project>, project_name: String, options: EditO
     }
 
     save_projects(&projects);
+
+    if options.refactor {
+        let dir = settings
+            .base_dir
+            .as_ref()
+            .expect("A Global Base Directory is needed to refactor during and edit command")
+            .clone();
+
+        refactor_projects(
+            projects.to_owned(),
+            project_name,
+            dir,
+            RefactorFlags {
+                dry_run:     false,
+                force:       true,
+                interactive: false,
+                verbose:     false,
+            },
+        );
+    }
 }
 
 pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {
