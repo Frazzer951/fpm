@@ -8,7 +8,7 @@ use crate::{PROJECT_DB_FILENAME, PROJECT_NAME};
 
 type Result<T> = std::result::Result<T, FileError>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileError {
     LoadingError,
     ParsingError,
@@ -50,20 +50,19 @@ impl Projects {
 
     pub fn save(&self) {
         // Get the directory of the project database file
+        let projects_path = self.project_path.clone();
         let mut projects_dir = self.project_path.clone();
         projects_dir.pop();
 
         // make sure path exists
-        fs::create_dir_all(projects_dir.clone()).unwrap();
-
-        projects_dir.push(PROJECT_DB_FILENAME);
+        fs::create_dir_all(projects_dir).unwrap();
 
         // remove duplicates
         let projects: Vec<&Project> = self.projects.iter().unique().sorted().collect();
 
         // save config to config_dir
         let contents = serde_json::to_string(&projects).unwrap();
-        fs::write(projects_dir, contents).unwrap();
+        fs::write(projects_path, contents).unwrap();
     }
 
     pub fn default_dir() -> PathBuf {
