@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, PartialEq)]
 pub struct Settings {
     #[serde(default)]
     pub base_dir:     Option<String>,
