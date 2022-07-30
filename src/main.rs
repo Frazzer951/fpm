@@ -7,14 +7,13 @@ use regex::Regex;
 
 use crate::file_handler::{save_projects, FileError, Project};
 use crate::project::add_project_from_folder;
-use crate::project_structure::{build_folder, load_template, Folder, TemplateVars};
 use crate::settings::Settings;
 
 mod cli;
 mod file_handler;
 mod project;
-mod project_structure;
 mod settings;
+mod templates;
 mod utils;
 
 // Project Constants
