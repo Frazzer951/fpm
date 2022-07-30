@@ -1,5 +1,6 @@
-use fpm::file_handler::{FileError, Project, Projects};
 use fs_err as fs;
+
+use fpm::file_handler::{FileError, Project, Projects};
 
 mod common;
 
@@ -89,5 +90,3 @@ fn test_projects_save() {
         fs::remove_file(&projects_db_path).unwrap();
     }
 }
-
-// 51, 53-54, 57, 59, 62, 65-66, 69-72
