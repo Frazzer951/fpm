@@ -77,3 +77,11 @@ impl Settings {
         fs::write(config_path, contents).unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn verify_default_git() { assert_eq!(default_git_command(), "git clone {FPM_GIT_URL}".to_string()) }
+}
