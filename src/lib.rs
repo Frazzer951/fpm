@@ -5,7 +5,7 @@ use clap::ArgMatches;
 use path_absolutize::Absolutize;
 use regex::Regex;
 
-use crate::file_handler::{FileError, Project, save_projects};
+use crate::file_handler::{save_projects, FileError, Project};
 use crate::project::add_project_from_folder;
 use crate::settings::Settings;
 
