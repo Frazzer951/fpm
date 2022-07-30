@@ -37,6 +37,7 @@ pub struct EditOptions {
     refactor:        bool,
 }
 
+#[no_coverage]
 pub fn project_handler(
     projects: &mut Projects,
     project_name: String,

@@ -1,6 +1,5 @@
-use fs_err as fs;
-
 use fpm::file_handler::{FileError, Project, Projects};
+use fs_err as fs;
 
 mod common;
 

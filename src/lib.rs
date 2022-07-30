@@ -1,3 +1,5 @@
+#![feature(no_coverage)]
+
 use std::path::PathBuf;
 use std::process::exit;
 
