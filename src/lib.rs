@@ -5,7 +5,7 @@ use clap::ArgMatches;
 use path_absolutize::Absolutize;
 use regex::Regex;
 
-use crate::file_handler::{save_projects, FileError, Project};
+use crate::file_handler::{FileError, Project, Projects};
 use crate::project::add_project_from_folder;
 use crate::settings::Settings;
 
@@ -30,11 +30,9 @@ pub fn parse() {
     let mut settings = Settings::new();
 
     // Load the project database
-    let mut projects = match file_handler::load_projects() {
+    let mut projects = match Projects::load(Projects::default_dir()) {
         Ok(p) => p,
-        Err(FileError::LoadingError) => {
-            vec![]
-        },
+        Err(FileError::LoadingError) => Projects::default(),
         Err(FileError::ParsingError) => {
             eprintln!(
                 "The Projects Database file failed to parse, please check for any errors in the file and re-run your \
@@ -123,7 +121,7 @@ pub fn parse() {
         Some(("list", sub_matches)) => {
             // Load the filter and print the projects
             let filter = sub_matches.get_one::<Regex>("filter").cloned();
-            for project in projects {
+            for project in projects.projects {
                 if filter.is_none() || filter.as_ref().unwrap().is_match(project.name.as_str()) {
                     println!("{}", project.name);
                 }
