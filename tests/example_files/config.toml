@@ -1,0 +1,3 @@
+base_dir = "/home/frazzer/dev"
+template_dir = "/home/frazzer/dev/templates"
+git_command = "git clone {FPM_GIT_URL}"

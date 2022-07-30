@@ -10,6 +10,8 @@
 [![MIT License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
+[![codecov][codecov-shield]][codecov-url]
+
 </div>
 
 <!-- PROJECT LOGO -->
@@ -174,3 +176,5 @@ Project Link: [https://github.com/frazzer951/fpm](https://github.com/frazzer951/
 [license-url]: https://github.com/Frazzer951/fpm/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://linkedin.com/in/luke-eltiste
+[codecov-shield]: https://codecov.io/gh/Frazzer951/fpm/branch/main/graph/badge.svg?token=IFPJ06NXQ5
+[codecov-url]: https://codecov.io/gh/Frazzer951/fpm
