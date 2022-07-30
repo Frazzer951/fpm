@@ -24,10 +24,10 @@ pub struct Project {
     pub p_type:    Option<String>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Eq, PartialEq, Debug)]
 pub struct Projects {
-    pub projects: Vec<Project>,
-    project_path: PathBuf,
+    pub projects:     Vec<Project>,
+    pub project_path: PathBuf,
 }
 
 impl Projects {
