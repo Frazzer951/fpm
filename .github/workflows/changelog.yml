@@ -2,6 +2,8 @@ name: Generate changelog
 on:
   release:
     types: [created, edited]
+  schedule:
+    - cron: "0 0 * * 0"
 
 jobs:
   generate-changelog:
