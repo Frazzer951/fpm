@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CONFIG_FILENAME, PROJECT_ENV_PREFIX, PROJECT_NAME};
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct Settings {
     #[serde(default)]
     pub base_dir:     Option<String>,
@@ -76,4 +76,12 @@ impl Settings {
         let contents = toml::to_string(self).unwrap();
         fs::write(config_path, contents).unwrap();
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn verify_default_git() { assert_eq!(default_git_command(), "git clone {FPM_GIT_URL}".to_string()) }
 }

@@ -7,8 +7,9 @@ use clap::ArgMatches;
 use fs_err as fs;
 use strsim::osa_distance;
 
+use crate::templates::{build_folder, Folder, TemplateVars, Templates};
 use crate::utils::move_folder;
-use crate::{build_folder, load_template, save_projects, Folder, Project, Settings, TemplateVars};
+use crate::{Project, Projects, Settings};
 
 #[derive(Debug)]
 pub struct VerifyFlags {
@@ -36,8 +37,9 @@ pub struct EditOptions {
     refactor:        bool,
 }
 
+#[no_coverage]
 pub fn project_handler(
-    projects: &mut Vec<Project>,
+    projects: &mut Projects,
     project_name: String,
     settings: Settings,
     command: Option<(&str, &ArgMatches)>,
@@ -101,7 +103,7 @@ pub fn project_handler(
             }
 
             edit_project(
-                projects.to_vec(),
+                projects.to_owned(),
                 project_name,
                 settings,
                 EditOptions {
@@ -120,7 +122,7 @@ pub fn project_handler(
 }
 
 pub fn add_project(
-    projects: &mut Vec<Project>,
+    projects: &mut Projects,
     name: String,
     directory: String,
     p_type: Option<String>,
@@ -133,21 +135,17 @@ pub fn add_project(
     }
 
     // add project to known projects
-    projects.push(Project {
+    projects.projects.push(Project {
         name,
         directory,
         category,
         p_type,
     });
-    save_projects(projects);
+
+    projects.save();
 }
 
-pub fn add_project_from_folder(
-    mut projects: Vec<Project>,
-    path: PathBuf,
-    p_type: Option<String>,
-    category: Option<String>,
-) {
+pub fn add_project_from_folder(mut projects: Projects, path: PathBuf, p_type: Option<String>, category: Option<String>) {
     // is there a folder at path?
     if !std::path::Path::new(&path).exists() {
         eprintln!("The directory `{}` specified does not exist", path.display());
@@ -162,7 +160,11 @@ pub fn add_project_from_folder(
             let directory = path.to_str().unwrap().to_string();
 
             // if there is a project with the same name, don't add it
-            if projects.iter().any(|p| p.name == name || p.directory == directory) {
+            if projects
+                .projects
+                .iter()
+                .any(|p| p.name == name || p.directory == directory)
+            {
                 continue;
             }
 
@@ -178,7 +180,7 @@ pub fn add_project_from_folder(
 
 pub fn new_project(
     mut settings: &mut Settings,
-    mut projects: Vec<Project>,
+    mut projects: Projects,
     project_vars: Project,
     git_url: Option<String>,
     templates: Vec<String>,
@@ -207,11 +209,11 @@ pub fn new_project(
         settings.template_dir = Some(String::from(template_path.to_str().unwrap()));
     }
 
-    let mut user_template_vars = HashSet::new();
+    // Load templates from the template directory
+    let template_files = Templates::new(settings);
 
-    for template in templates {
-        user_template_vars.extend(load_template(settings, &mut project, template.clone()).into_iter());
-    }
+    let mut user_template_vars = HashSet::new();
+    user_template_vars.extend(template_files.load_templates(templates, &mut project));
 
     // create project folders
     fs::create_dir_all(project_path.clone()).unwrap();
@@ -255,13 +257,13 @@ pub fn new_project(
     }
 
     // add project to known projects
-    projects.push(Project {
+    projects.projects.push(Project {
         name:      project_vars.name,
         directory: String::from(project_path.to_str().unwrap()),
         category:  project_vars.category.clone(),
         p_type:    project_vars.p_type.clone(),
     });
-    save_projects(&projects);
+    projects.save();
 
     if open {
         // open dir
@@ -269,10 +271,10 @@ pub fn new_project(
     }
 }
 
-pub fn verify_projects(mut projects: Vec<Project>, name: String, flags: VerifyFlags) {
+pub fn verify_projects(mut projects: Projects, name: String, flags: VerifyFlags) {
     let mut projects_to_remove = vec![];
 
-    for mut project in &mut projects {
+    for mut project in &mut projects.projects {
         if project.name == name || name == "*" {
             // check if the folder stored in directory exits
             if !std::path::Path::new(&project.directory).exists() {
@@ -311,7 +313,7 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String, flags: VerifyFl
         }
     }
 
-    projects.retain(|proj| {
+    projects.projects.retain(|proj| {
         for p in &projects_to_remove {
             if proj.name == p.name && proj.directory == p.directory {
                 return false;
@@ -319,11 +321,11 @@ pub fn verify_projects(mut projects: Vec<Project>, name: String, flags: VerifyFl
         }
         true
     });
-    save_projects(&projects)
+    projects.save();
 }
 
-pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: String, flags: RefactorFlags) {
-    for project in &mut projects {
+pub fn refactor_projects(mut projects: Projects, name: String, base_dir: String, flags: RefactorFlags) {
+    for project in &mut projects.projects {
         if project.name == name || name == "*" {
             let mut dir = PathBuf::from(&base_dir);
             if let Some(category) = &project.category {
@@ -366,11 +368,15 @@ pub fn refactor_projects(mut projects: Vec<Project>, name: String, base_dir: Str
             }
         }
     }
-    save_projects(&projects);
+    projects.save();
 }
 
-fn edit_project(mut projects: Vec<Project>, project_name: String, settings: Settings, options: EditOptions) {
-    let mut filtered_projects: Vec<&mut Project> = projects.iter_mut().filter(|p| p.name == project_name).collect();
+fn edit_project(mut projects: Projects, project_name: String, settings: Settings, options: EditOptions) {
+    let mut filtered_projects: Vec<&mut Project> = projects
+        .projects
+        .iter_mut()
+        .filter(|p| p.name == project_name)
+        .collect();
     let project_index = if filtered_projects.len() > 1 {
         println!("More than one project found with the name {}", project_name);
         println!("Enter the number for the project you wish to edit");
@@ -408,7 +414,7 @@ fn edit_project(mut projects: Vec<Project>, project_name: String, settings: Sett
         filtered_projects[project_index].category = None;
     }
 
-    save_projects(&projects);
+    projects.save();
 
     if options.refactor {
         let dir = settings
@@ -431,8 +437,8 @@ fn edit_project(mut projects: Vec<Project>, project_name: String, settings: Sett
     }
 }
 
-pub fn get_similar(projects: &[Project], name: &str) -> (usize, Vec<String>) {
-    let names: Vec<String> = projects.iter().map(|proj| proj.name.clone()).collect();
+pub fn get_similar(projects: &Projects, name: &str) -> (usize, Vec<String>) {
+    let names: Vec<String> = projects.projects.iter().map(|proj| proj.name.clone()).collect();
     let names = names.iter().map(|s| s as &str).collect();
     let name_distances = similar_strings(name, names);
     let min = name_distances.iter().min_by_key(|entry| entry.0).unwrap();
