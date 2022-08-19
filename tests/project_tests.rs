@@ -1,6 +1,7 @@
 use fpm::file_handler::{Project, Projects};
 use fpm::project::add_project;
 use fs_err as fs;
+
 mod common;
 
 #[test]
@@ -10,7 +11,7 @@ fn test_project_add() {
 
     let mut projects = Projects {
         project_path: projects_db_path.clone(),
-        ..Default::default()
+        ..Projects::default(None)
     };
 
     add_project(

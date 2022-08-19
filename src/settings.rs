@@ -13,6 +13,8 @@ pub struct Settings {
     pub base_dir:     Option<String>,
     #[serde(default)]
     pub template_dir: Option<String>,
+    #[serde(default)]
+    pub database_dir: Option<String>,
     #[serde(default = "default_git_command")]
     pub git_command:  String,
     #[serde(skip_serializing)]
@@ -26,6 +28,7 @@ impl Default for Settings {
         Settings {
             base_dir:     None,
             template_dir: None,
+            database_dir: None,
             git_command:  default_git_command(),
             config_dir:   String::from(""),
         }

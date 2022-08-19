@@ -106,7 +106,7 @@ fn subcommand_config() -> App<'static> {
                     Arg::new("setting")
                         .required(true)
                         .takes_value(true)
-                        .value_parser(["base_dir", "template_dir", "git_command"])
+                        .value_parser(["base_dir", "template_dir", "git_command", "database_dir"])
                         .help("The setting to modify"),
                     Arg::new("value").required(true).help("The modified value"),
                 ]),

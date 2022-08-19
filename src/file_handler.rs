@@ -24,7 +24,7 @@ pub struct Project {
     pub p_type:    Option<String>,
 }
 
-#[derive(Default, Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Projects {
     pub projects:     Vec<Project>,
     pub project_path: PathBuf,
@@ -52,6 +52,7 @@ impl Projects {
         // Get the directory of the project database file
         let projects_path = self.project_path.clone();
         let mut projects_dir = self.project_path.clone();
+
         projects_dir.pop();
 
         // make sure path exists
@@ -70,5 +71,15 @@ impl Projects {
         projects_dir.push(PROJECT_NAME);
         projects_dir.push(PROJECT_DB_FILENAME);
         projects_dir
+    }
+
+    pub fn default(path: Option<String>) -> Self {
+        Self {
+            projects:     vec![],
+            project_path: match path {
+                Some(ref path) => PathBuf::from(path),
+                None => Projects::default_dir(),
+            },
+        }
     }
 }
