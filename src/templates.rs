@@ -182,6 +182,7 @@ pub struct FilePointer {
 
 pub struct TemplateVars {
     pub project_name: String,
+    pub project_dir:  String,
 }
 
 pub fn build_folder(
@@ -229,8 +230,9 @@ pub fn build_file(
     }
 }
 
-fn process_template_vars(string: &str, vars: &TemplateVars, user_vars: &Vec<(String, String)>) -> String {
+pub fn process_template_vars(string: &str, vars: &TemplateVars, user_vars: &Vec<(String, String)>) -> String {
     let mut line = string.replace("{fpm_project_name}", vars.project_name.as_str());
+    line = line.replace("{fpm_project_dir}", vars.project_dir.as_str());
 
     for (template, value) in user_vars {
         line = line.replace(format!("{{{}}}", template).as_str(), value.as_str());

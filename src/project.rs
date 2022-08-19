@@ -7,7 +7,7 @@ use clap::ArgMatches;
 use fs_err as fs;
 use strsim::osa_distance;
 
-use crate::templates::{build_folder, Folder, TemplateVars, Templates};
+use crate::templates::{build_folder, process_template_vars, Folder, TemplateVars, Templates};
 use crate::utils::move_folder;
 use crate::{Project, Projects, Settings};
 
@@ -238,6 +238,7 @@ pub fn new_project(
 
     let template_vars = TemplateVars {
         project_name: project_vars.name.clone(),
+        project_dir:  project_path.to_str().unwrap().to_string(),
     };
 
     // build the project
@@ -245,7 +246,11 @@ pub fn new_project(
 
     // run git clone command
     if let Some(git_url) = git_url {
-        let command = settings.git_command.replace("{FPM_GIT_URL}", git_url.as_str());
+        let command = process_template_vars(
+            &settings.git_command.replace("{fpm_git_url}", git_url.as_str()),
+            &template_vars,
+            &vec![],
+        );
 
         let command_parts: Vec<&str> = command.split(' ').collect();
         // run the command stored in the command variable

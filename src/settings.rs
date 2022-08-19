@@ -19,7 +19,7 @@ pub struct Settings {
     pub config_dir:   String,
 }
 
-fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }
+fn default_git_command() -> String { "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string() }
 
 impl Default for Settings {
     fn default() -> Self {
@@ -83,5 +83,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn verify_default_git() { assert_eq!(default_git_command(), "git clone {FPM_GIT_URL}".to_string()) }
+    fn verify_default_git() {
+        assert_eq!(
+            default_git_command(),
+            "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string()
+        )
+    }
 }
