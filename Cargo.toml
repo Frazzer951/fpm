@@ -16,7 +16,7 @@ name = "fpm"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "3.2.6", features = ["cargo"] }
+clap = { version = "4.0.12", features = ["cargo"] }
 config = "0.13.1"
 dirs = "4.0.0"
 fs-err = "2.7.0"
