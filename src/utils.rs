@@ -25,7 +25,7 @@ where
         let entry = entry?;
         if entry.file_type().is_dir() {
             let to_path = replace_prefix(entry.path(), from, to);
-            fs::create_dir_all(&to_path)?;
+            fs::create_dir_all(to_path)?;
         } else {
             let to_file = replace_prefix(entry.path(), from, to);
             if print_progress {

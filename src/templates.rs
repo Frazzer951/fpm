@@ -123,7 +123,7 @@ pub struct Template {
 impl Template {
     pub fn load(template_dir: PathBuf, template_name: String) -> Self {
         // Load the file
-        let contents = match fs::read_to_string(&template_dir) {
+        let contents = match fs::read_to_string(template_dir) {
             Ok(c) => c,
             Err(_) => {
                 eprintln!("The template: {} could not be found", template_name);
