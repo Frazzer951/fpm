@@ -1,7 +1,6 @@
 name: Code Coverage
 
-on: [ push ]
-
+on: [push]
 jobs:
   test:
     name: coverage
@@ -20,5 +19,4 @@ jobs:
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v3
         with:
-          # token: ${{secrets.CODECOV_TOKEN}} # not required for public repos
           fail_ci_if_error: true
