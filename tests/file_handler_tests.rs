@@ -63,7 +63,7 @@ fn test_projects_save() {
 
     let mut projects = Projects {
         project_path: projects_db_path.clone(),
-        ..Default::default()
+        ..Projects::default(None)
     };
     projects.projects.push(Project {
         name:      "test_proj".to_string(),

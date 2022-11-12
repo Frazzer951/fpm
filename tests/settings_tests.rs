@@ -13,7 +13,8 @@ fn verify_default_settings() {
         Settings {
             base_dir:     None,
             template_dir: None,
-            git_command:  "git clone {FPM_GIT_URL}".to_string(),
+            database_dir: None,
+            git_command:  "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string(),
             config_dir:   "".to_string(),
         }
     )
@@ -38,7 +39,8 @@ fn test_settings_new() {
         Settings {
             base_dir:     None,
             template_dir: None,
-            git_command:  "git clone {FPM_GIT_URL}".to_string(),
+            database_dir: None,
+            git_command:  "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string(),
             config_dir:   test_dir.to_str().unwrap().to_string(),
         }
     );
@@ -64,6 +66,7 @@ fn test_settings_new_from_existing() {
         Settings {
             base_dir:     Some("/home/frazzer/dev".to_string()),
             template_dir: Some("/home/frazzer/dev/templates".to_string()),
+            database_dir: Some("/home/frazzer/dev/database".to_string()),
             git_command:  "git clone {FPM_GIT_URL}".to_string(),
             config_dir:   test_dir.to_str().unwrap().to_string(),
         }

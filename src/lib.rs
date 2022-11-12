@@ -32,9 +32,12 @@ pub fn parse() {
     let mut settings = Settings::new();
 
     // Load the project database
-    let mut projects = match Projects::load(Projects::default_dir()) {
+    let mut projects = match Projects::load(match settings.database_dir {
+        Some(ref path) => PathBuf::from(path),
+        None => Projects::default_dir(),
+    }) {
         Ok(p) => p,
-        Err(FileError::LoadingError) => Projects::default(),
+        Err(FileError::LoadingError) => Projects::default(settings.database_dir.clone()),
         Err(FileError::ParsingError) => {
             eprintln!(
                 "The Projects Database file failed to parse, please check for any errors in the file and re-run your \
@@ -156,6 +159,9 @@ fn config_handler(settings: &mut Settings, command: Option<(&str, &ArgMatches)>)
                 },
                 "template_dir" => {
                     settings.template_dir = Some(value);
+                },
+                "database_dir" => {
+                    settings.database_dir = Some(value);
                 },
                 "git_command" => {
                     settings.git_command = value;

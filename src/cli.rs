@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use clap::{command, App, Arg, ArgAction, ArgGroup, Command};
+use clap::{command, Arg, ArgAction, ArgGroup, Command};
 use regex::Regex;
 
-pub fn cli() -> Command<'static> {
+pub fn cli() -> Command {
     command!()
         .subcommand_required(true)
         .arg_required_else_help(true)
@@ -17,7 +17,7 @@ pub fn cli() -> Command<'static> {
         ])
 }
 
-fn subcommand_new() -> App<'static> {
+fn subcommand_new() -> Command {
     Command::new("new")
         .about("Create a New project")
         .arg_required_else_help(true)
@@ -26,33 +26,28 @@ fn subcommand_new() -> App<'static> {
                 .required(true)
                 .short('n')
                 .long("name")
-                .takes_value(true)
                 .help("Project Name"),
             Arg::new("type")
                 .short('t')
                 .long("type")
-                .takes_value(true)
                 .help("Project Type - This determines the folder the project will placed into"),
-            Arg::new("category").short('c').long("category").takes_value(true).help(
+            Arg::new("category").short('c').long("category").help(
                 "Project Category - Another layer of separation, similar to project type, that will help to get \
                  project seperated. Examples would be `Work`, `Personal` and so on",
             ),
             Arg::new("directory")
                 .short('d')
                 .long("directory")
-                .takes_value(true)
                 .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
             Arg::new("template")
                 .long("template")
                 .visible_alias("t")
-                .takes_value(true)
-                .multiple_values(true)
+                .num_args(1..)
                 .action(ArgAction::Append)
                 .help("Templates to use when generating a project i.e. `--t template1 template2`"),
             Arg::new("GIT_URL")
                 .short('g')
                 .long("git-url")
-                .takes_value(true)
                 .conflicts_with("template")
                 .help("Clone from a Git URL"),
             Arg::new("open")
@@ -63,7 +58,7 @@ fn subcommand_new() -> App<'static> {
         ])
 }
 
-fn subcommand_add() -> App<'static> {
+fn subcommand_add() -> Command {
     Command::new("add")
         .about("Add an existing project")
         .arg_required_else_help(true)
@@ -72,28 +67,21 @@ fn subcommand_add() -> App<'static> {
                 .required(true)
                 .short('n')
                 .long("name")
-                .takes_value(true)
                 .help("Project Name"),
             Arg::new("directory")
                 .required(true)
                 .short('d')
                 .long("directory")
-                .takes_value(true)
                 .help("Directory of the project"),
-            Arg::new("type")
-                .short('t')
-                .long("type")
-                .takes_value(true)
-                .help("Project Type"),
+            Arg::new("type").short('t').long("type").help("Project Type"),
             Arg::new("category")
                 .short('c')
                 .long("category")
-                .takes_value(true)
                 .help("Project Category"),
         ])
 }
 
-fn subcommand_config() -> App<'static> {
+fn subcommand_config() -> Command {
     Command::new("config")
         .about("Configuration Settings")
         .subcommand_required(true)
@@ -105,8 +93,7 @@ fn subcommand_config() -> App<'static> {
                 .args(&[
                     Arg::new("setting")
                         .required(true)
-                        .takes_value(true)
-                        .value_parser(["base_dir", "template_dir", "git_command"])
+                        .value_parser(["base_dir", "template_dir", "git_command", "database_dir"])
                         .help("The setting to modify"),
                     Arg::new("value").required(true).help("The modified value"),
                 ]),
@@ -115,14 +102,13 @@ fn subcommand_config() -> App<'static> {
         .subcommand(Command::new("open").about("Open the config directory"))
 }
 
-fn subcommand_project() -> App<'static> {
+fn subcommand_project() -> Command {
     Command::new("project")
         .about("Project options")
         .subcommand_required(true)
         .arg_required_else_help(true)
         .arg(
             Arg::new("project_name")
-                .takes_value(true)
                 .default_value("*")
                 .global(true)
                 .help("The name of the project to verify or leave blank to verify all projects"),
@@ -149,7 +135,7 @@ fn subcommand_project() -> App<'static> {
                 ])
                 .group(
                     ArgGroup::new("verify_options")
-                        .args(&["list", "remove", "interactive"])
+                        .args(["list", "remove", "interactive"])
                         .required(true),
                 ),
         )
@@ -175,7 +161,6 @@ fn subcommand_project() -> App<'static> {
                     Arg::new("directory")
                         .short('d')
                         .long("directory")
-                        .takes_value(true)
                         .help("Manually specify the base directory to use. -- Overrides base_dir specified in config"),
                     Arg::new("verbose")
                         .short('v')
@@ -189,22 +174,18 @@ fn subcommand_project() -> App<'static> {
                 Arg::new("name")
                     .short('n')
                     .long("name")
-                    .takes_value(true)
                     .help("Change the project's name"),
                 Arg::new("directory")
                     .short('d')
                     .long("directory")
-                    .takes_value(true)
                     .help("Change the project's directory. DOES NOT MOVE THE PROJECT"),
                 Arg::new("type")
                     .short('t')
                     .long("type")
-                    .takes_value(true)
                     .help("Change the project's type"),
                 Arg::new("category")
                     .short('c')
                     .long("category")
-                    .takes_value(true)
                     .help("Change the project's category"),
                 Arg::new("remove_type")
                     .long("remove-type")
@@ -225,35 +206,28 @@ fn subcommand_project() -> App<'static> {
         )
 }
 
-fn subcommand_list() -> App<'static> {
+fn subcommand_list() -> Command {
     Command::new("list").about("List out all known projects").arg(
         Arg::new("filter")
             .short('f')
             .long("filter")
-            .takes_value(true)
             .value_parser(clap::value_parser!(Regex))
             .help("A regex filter used to filter names when displaying projects"),
     )
 }
 
-fn subcommand_add_folder() -> App<'static> {
+fn subcommand_add_folder() -> Command {
     Command::new("add-folder")
         .about("Interactively add folders from the specified directory")
         .args(&[
             Arg::new("path")
-                .takes_value(true)
                 .required(true)
                 .value_parser(clap::value_parser!(PathBuf))
                 .help("The Path to the directory to add folders from"),
-            Arg::new("type")
-                .short('t')
-                .long("type")
-                .takes_value(true)
-                .help("Project Type"),
+            Arg::new("type").short('t').long("type").help("Project Type"),
             Arg::new("category")
                 .short('c')
                 .long("category")
-                .takes_value(true)
                 .help("Project Category"),
         ])
 }

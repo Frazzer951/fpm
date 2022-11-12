@@ -13,19 +13,22 @@ pub struct Settings {
     pub base_dir:     Option<String>,
     #[serde(default)]
     pub template_dir: Option<String>,
+    #[serde(default)]
+    pub database_dir: Option<String>,
     #[serde(default = "default_git_command")]
     pub git_command:  String,
     #[serde(skip_serializing)]
     pub config_dir:   String,
 }
 
-fn default_git_command() -> String { "git clone {FPM_GIT_URL}".to_string() }
+fn default_git_command() -> String { "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string() }
 
 impl Default for Settings {
     fn default() -> Self {
         Settings {
             base_dir:     None,
             template_dir: None,
+            database_dir: None,
             git_command:  default_git_command(),
             config_dir:   String::from(""),
         }
@@ -83,5 +86,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn verify_default_git() { assert_eq!(default_git_command(), "git clone {FPM_GIT_URL}".to_string()) }
+    fn verify_default_git() {
+        assert_eq!(
+            default_git_command(),
+            "git clone {fpm_git_url} --recursive {fpm_project_dir}".to_string()
+        )
+    }
 }
