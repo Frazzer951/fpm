@@ -30,15 +30,14 @@ jobs:
       - name: Build
         run: |
           cargo build --release --target ${{ matrix.config.target }}
-      - name: Prepare package
-        run: |
-          mkdir binaries
-          if ("${{ runner.os }}" STREQUAL "Windows")
-            cp target/${{ matrix.config.target }}/release/${{ matrix.binary }}.exe binaries/
-          elseif ("${{ runner.os }}" STREQUAL "Linux")
-            cp target/${{ matrix.config.target }}/release/${{ matrix.binary }} binaries/
-          endif()
-
+      - name: Make Dir
+        run: mkdir binaries
+      - name: Copy Windows
+        run: cp target/${{ matrix.config.target }}/release/${{ matrix.binary }}.exe binaries/
+        if: ${{ runner.os }} == Windows
+      - name: Copy Linux
+        run: cp target/${{ matrix.config.target }}/release/${{ matrix.binary }} binaries/
+        if: ${{ runner.os }} == Linux
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
