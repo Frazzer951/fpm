@@ -33,10 +33,10 @@ jobs:
       - name: Make Dir
         run: mkdir binaries
       - name: Copy Windows
-        if: ${{ runner.os }} == Windows
+        if: runner.os == 'Windows'
         run: cp target/${{ matrix.config.target }}/release/${{ matrix.binary }}.exe binaries/
       - name: Copy Linux
-        if: ${{ runner.os }} == Linux
+        if: runner.os == 'Linux'
         run: cp target/${{ matrix.config.target }}/release/${{ matrix.binary }} binaries/
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
