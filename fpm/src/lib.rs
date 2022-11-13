@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used, clippy::expect_used)]
+
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
