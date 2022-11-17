@@ -7,3 +7,4 @@ version = "0.6.0"
 
 [dependencies]
 anyhow = "1.0"
+dirs = "4.0"
