@@ -4,4 +4,5 @@ pub mod config;
 pub mod database;
 pub mod project;
 
+mod error;
 mod utils;
