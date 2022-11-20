@@ -26,7 +26,7 @@ impl Database {
     }
 
     pub fn load_database(config: Config) -> Result<Self> {
-        let dir = PathBuf::from(config.database_dir);
+        let dir = PathBuf::from(config.database_path);
 
         let data = match fs::read_to_string(dir) {
             Ok(d) => d,

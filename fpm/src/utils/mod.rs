@@ -6,6 +6,6 @@ use crate::error::Error;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-pub fn config_folder() -> Option<PathBuf> {
-    config_dir()
+pub fn config_folder() -> PathBuf {
+    config_dir().unwrap_or_default()
 }
