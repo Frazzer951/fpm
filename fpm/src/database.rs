@@ -32,13 +32,13 @@ impl Database {
             Ok(d) => d,
             Err(e) => {
                 return Err(Error::IO(e));
-            }
+            },
         };
         let db = match serde_json::from_str::<Database>(&data) {
             Ok(db) => db,
             Err(e) => {
                 return Err(Error::Json(e));
-            }
+            },
         };
 
         Ok(db)
