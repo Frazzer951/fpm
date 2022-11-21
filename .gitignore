@@ -19,3 +19,6 @@ Cargo.lock
 
 # Coverage Files
 cobertura.xml
+
+# Test Files
+*test_files/

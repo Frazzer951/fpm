@@ -11,7 +11,7 @@ pub fn config_folder() -> PathBuf {
 }
 
 #[cfg(test)]
-pub mod test_funcs {
+pub mod test_utils {
     use super::*;
     use fs_err as fs;
     use std::path::Path;
