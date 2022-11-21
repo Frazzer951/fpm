@@ -44,3 +44,18 @@ impl Database {
         Ok(db)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::utils::test_funcs::is_same_file;
+    use anyhow::Result;
+    use std::path::Path;
+
+    // TODO: Rewrite to actually test class
+
+    #[test]
+    fn internal() -> Result<()> {
+        assert!(is_same_file(Path::new("./src/database.rs"), Path::new("./src/database.rs"))?);
+        Ok(())
+    }
+}
