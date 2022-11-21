@@ -26,9 +26,9 @@ impl Database {
     }
 
     pub fn load_database(config: Config) -> Result<Self> {
-        let dir = PathBuf::from(config.database_path);
+        let path = PathBuf::from(config.database_path);
 
-        let data = match fs::read_to_string(dir) {
+        let data = match fs::read_to_string(path) {
             Ok(d) => d,
             Err(e) => {
                 return Err(Error::IO(e));
@@ -42,6 +42,22 @@ impl Database {
         };
 
         Ok(db)
+    }
+
+    pub fn save_database(&self, config: Config) -> Result<()> {
+        let path = PathBuf::from(config.database_path);
+
+        let data = match serde_json::to_string(self) {
+            Ok(d) => d,
+            Err(e) => {
+                return Err(Error::Json(e));
+            },
+        };
+
+        match fs::write(path, data) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Error::IO(e)),
+        }
     }
 }
 
