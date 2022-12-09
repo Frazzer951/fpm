@@ -16,7 +16,7 @@ jobs:
         config:
           - { name: linux, os: ubuntu-latest, target: x86_64-unknown-linux-gnu, extension: "" }
           - { name: windows, os: windows-latest, target: x86_64-pc-windows-msvc, extension: ".exe" }
-        binary: [fpm, fpm-cli]
+        binary: [fpm]
     runs-on: ${{ matrix.config.os }}
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.2
