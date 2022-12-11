@@ -34,17 +34,12 @@ impl Config {
 
         let content = match fs::read_to_string(config_path) {
             Ok(c) => c,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => String::new(),
             Err(e) => return Err(Error::IO(e)),
         };
 
-        if content.is_empty() {
-            Ok(Config::default())
-        } else {
-            match toml::from_str::<Config>(&content) {
-                Ok(c) => Ok(c),
-                Err(e) => Err(Error::TomlDes(e)),
-            }
+        match toml::from_str::<Config>(&content) {
+            Ok(c) => Ok(c),
+            Err(e) => Err(Error::TomlDes(e)),
         }
     }
 
