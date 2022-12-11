@@ -59,8 +59,12 @@ mod tests {
             category: None,
         };
 
+        println!("Adding project");
         add_project(&config, &project)?;
+
+        println!("Loading project");
         let projects = load_projects(&config)?;
+
         assert_eq!(projects.len(), 1);
 
         let p = projects[0].clone();
