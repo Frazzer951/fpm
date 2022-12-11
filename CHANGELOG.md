@@ -1,97 +1,463 @@
-# CHANGELOG
+# Changelog
 
-## [v0.5.0](https://github.com/Frazzer951/fpm/releases/tag/v0.5.0) - 2022-08-03 18:06:26
-
-## What's Changed
-* feat: refactor on edit by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/52
-* refactor: cleanup cli and move it to another file by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/53
-* refactor: Move CLI stuff to another file by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/54
-* feat: Add template groups and refactor how templates are processed - … by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/56
-* chore: update serde_yaml requirement from 0.8.24 to 0.9.0 by @dependabot in https://github.com/Frazzer951/fpm/pull/57
-* Add Tests by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/58
-* v0.5.0 Development  by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/55
-
-
-**Full Changelog**: https://github.com/Frazzer951/fpm/compare/v0.4.1...v0.5.0
-
-### Feature
-
-- general:
-  - Add template groups and refactor how templates are processed - closes #49 ([7cff400](https://github.com/Frazzer951/fpm/commit/7cff400b7f820f45b6bd440ffc707e177ba16d5d)) ([#56](https://github.com/Frazzer951/fpm/pull/56))
-  - Add flag to refactor after editing - closes #50 ([876bcc0](https://github.com/Frazzer951/fpm/commit/876bcc097f496add1d961fe2c7835b505b92a722)) ([#52](https://github.com/Frazzer951/fpm/pull/52))
-
-### Refactor
-
-- general:
-  - Refactor projects to use a custom struct ([64d7589](https://github.com/Frazzer951/fpm/commit/64d7589c90debbf0e7108904219472b69db83149)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - move bulk of code into lib.rs for testing ([b67117c](https://github.com/Frazzer951/fpm/commit/b67117c9d7192c87ea517b44bc7f901d56acbf69)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Move CLI stuff to another file ([bb4de4c](https://github.com/Frazzer951/fpm/commit/bb4de4c16814398fda8ae0b9c6bb948a23cf9da1)) ([#53](https://github.com/Frazzer951/fpm/pull/53))
+## [unreleased]
 
 ### Continuous Integration
 
-- general:
-  - use the nightly toolchain ([e256e9f](https://github.com/Frazzer951/fpm/commit/e256e9fe0ca78328e8b55329aa5aa02113cdaeac))
-  - run changelog.yml on cron too ([3e59c8a](https://github.com/Frazzer951/fpm/commit/3e59c8a71b6e5844b058bdbdf6106e7b2aa1ce1b))
-  - set toolchain to nightly ([d9477c4](https://github.com/Frazzer951/fpm/commit/d9477c49ec9fbaccc21556395f81792e3f9c0b70)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - Add config file for tarpaulin ([e07a3ef](https://github.com/Frazzer951/fpm/commit/e07a3ef3af466d61c0e6c9f0d366724ccc49b950)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Use recommended Coverage workflow ([96af530](https://github.com/Frazzer951/fpm/commit/96af530639420166d00b4c4ba08be26bd008b79b)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Add `test` type to Types ([fa478e8](https://github.com/Frazzer951/fpm/commit/fa478e8f840ecc38cb50d447d728eaee50cdc587)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - codecov.yml fix cache ([60b0557](https://github.com/Frazzer951/fpm/commit/60b055793b67cda5c81f012feeee18e5ac0ee980)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - codecov.yml add workflow dispatch ([036a290](https://github.com/Frazzer951/fpm/commit/036a2908f6420d14cae46e69cfa2ccafeccd4ff1)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - fix codecov.yml ([cbe6c58](https://github.com/Frazzer951/fpm/commit/cbe6c58f148411fd6b43c9c82546733c6159fbdf)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - manually run cargo-tarpaulin ([685994a](https://github.com/Frazzer951/fpm/commit/685994ae16f89e7fd2e9398b17abe2c0f8ed3077)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - add codecov action ([0b85158](https://github.com/Frazzer951/fpm/commit/0b8515823242382725c8e52ea2644a309c40ff6e)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - set `auto-generate-changelog` version ([396422d](https://github.com/Frazzer951/fpm/commit/396422d37b093c49df0566d893e9fca1f1a7712e)) ([#52](https://github.com/Frazzer951/fpm/pull/52))
+- Conditional steps
+- Fix if statements in release.yaml
+- Remove brackets from release.yaml
+- Use proper extension
+- Enforce more clippy checks, closes #59
 
-### Chore
+### Features
 
-- general:
-  - set crate version ([7287d2d](https://github.com/Frazzer951/fpm/commit/7287d2d212f28de976c59795db45463175614f8c)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
-  - Add Codecov badge to readme ([aba36bd](https://github.com/Frazzer951/fpm/commit/aba36bd41e22bf9b83c0a3adcce2ad0b6a276d8b)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - update serde_yaml requirement from 0.8.24 to 0.9.0 ([bde307b](https://github.com/Frazzer951/fpm/commit/bde307b76cfe6bac22966577a36b64dae64b6e95)) ([#57](https://github.com/Frazzer951/fpm/pull/57))
-  - remove un-needed feature ([b1b3a61](https://github.com/Frazzer951/fpm/commit/b1b3a61c9a126121dadd7d9f9ddd4294b54faefa)) ([#55](https://github.com/Frazzer951/fpm/pull/55))
+- Add Project Struct
+- Add custom error enum
+- Load Project Database
+- Default Config
+- Save database to file
+- Start of cli to create project
 
-### Tests
+### Miscellaneous Tasks
 
-- general:
-  - don't check tests dir for coverage ([320b0bb](https://github.com/Frazzer951/fpm/commit/320b0bb9d18b795f5776b60538969e5e956b67ad))
-  - Test add_project ([9b4bfb8](https://github.com/Frazzer951/fpm/commit/9b4bfb82c0039ffd180cdd8a5a1c8ae8e1d02e39)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Add more tests for Projects ([63d2920](https://github.com/Frazzer951/fpm/commit/63d29208ebb7f67d9f3f30f92bac922fa4d2ee62)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Add basic load test for Projects ([754cbe8](https://github.com/Frazzer951/fpm/commit/754cbe8822ee8f9dc3eed38f7c3b2c73670905bc)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Add more tests for settings.rs ([3d12310](https://github.com/Frazzer951/fpm/commit/3d12310f0019ce1becee44b2dc1d86a531fe5ad6)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Add more tests for settings.rs ([1ecdc51](https://github.com/Frazzer951/fpm/commit/1ecdc510a48f9916f82de769beafeab23f8458c3)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
-  - Verify default git command ([159b2d2](https://github.com/Frazzer951/fpm/commit/159b2d20674494b7bb992cf0b4a7d8206ac9f331)) ([#58](https://github.com/Frazzer951/fpm/pull/58))
+- Setup more modules
+- Add rustfmt.toml
 
-## [v0.4.1](https://github.com/Frazzer951/fpm/releases/tag/v0.4.1) - 2022-07-20 22:56:55
+### Refactor
 
-## What's Changed
-* v0.4.1 Development by @Frazzer951 in https://github.com/Frazzer951/fpm/pull/48
+- Rename crates
 
+### Testing
 
-**Full Changelog**: https://github.com/Frazzer951/fpm/compare/v0.4.0...v0.4.1
+- Setup infra for testing if files are equal
+- Save and Load empty database
 
-### Feature
-
-- general:
-  - Add ability to set git_command from commandline ([ed9a3ef](https://github.com/Frazzer951/fpm/commit/ed9a3ef39ef2dc3533c648b6cdb2377e72a494df)) ([#48](https://github.com/Frazzer951/fpm/pull/48))
+## [0.6.0] - 2022-11-12
 
 ### Bug Fixes
 
-- general:
-  - Fix bug that causes crash when no config file exists ([9aa13bd](https://github.com/Frazzer951/fpm/commit/9aa13bd592868178a8553078b2078a45ceba0f04)) ([#48](https://github.com/Frazzer951/fpm/pull/48))
+- Fix default git command - closes #61
+- Fix clippy errors
 
-### Chore
+### Continuous Integration
 
-- general:
-  - remove dev from version ([672c8d3](https://github.com/Frazzer951/fpm/commit/672c8d3d25dc5330b5b6b921e6d2a1fbd0a6dc55)) ([#52](https://github.com/Frazzer951/fpm/pull/52))
-  - set version to dev ([1727306](https://github.com/Frazzer951/fpm/commit/172730650c16581b4557e7ea61299be4e38564c8)) ([#48](https://github.com/Frazzer951/fpm/pull/48))
+- Set specific version
+- Make changelog.yml callable
+- Update CIs
+- Update release yaml to be more generic
+- Fix bug in release.yaml and remove MacOS support
 
-## [v0.4.0](https://github.com/Frazzer951/fpm/releases/tag/v0.4.0) - 2022-06-23 19:58:47
+### Documentation
 
-## [v0.3.0](https://github.com/Frazzer951/fpm/releases/tag/v0.3.0) - 2022-06-22 03:15:28
+- Update release notes
 
-## [v0.2.0](https://github.com/Frazzer951/fpm/releases/tag/v0.2.0) - 2022-06-16 21:11:22
+### Features
 
-## [v0.1.0](https://github.com/Frazzer951/fpm/releases/tag/v0.1.0) - 2022-06-13 23:38:44
+- Ability to set database directory
 
-\* *This CHANGELOG was automatically generated by [auto-generate-changelog](https://github.com/BobAnkh/auto-generate-changelog)*
+### Miscellaneous Tasks
+
+- Update serial_test requirement from 0.8.0 to 0.9.0
+- Bump actions/checkout from 2 to 3
+- Update dependencies
+- Update dependencies
+- Set toolchain and bump version
+
+### Other
+
+- PR # [63](https://github.com/Frazzer951/fpm/pull/63): bump actions/checkout from 2 to 3
+
+### Refactor
+
+- Project Rewrite
+
+## [0.5.0] - 2022-08-03
+
+### Continuous Integration
+
+- Set `auto-generate-changelog` version
+- Add codecov action
+- Manually run cargo-tarpaulin
+- Fix codecov.yml
+- Codecov.yml add workflow dispatch
+- Codecov.yml fix cache
+- Add `test` type to Types
+- Use recommended Coverage workflow
+- Add config file for tarpaulin
+- Set toolchain to nightly
+- Run changelog.yml on cron too
+- Use the nightly toolchain
+
+### Features
+
+- Add flag to refactor after editing - closes #50
+- Add template groups and refactor how templates are processed - closes #49
+
+### Miscellaneous Tasks
+
+- Remove un-needed feature
+- Update serde_yaml requirement from 0.8.24 to 0.9.0
+- Add Codecov badge to readme
+- Set crate version
+
+### Other
+
+- PR # [52](https://github.com/Frazzer951/fpm/pull/52): refactor on edit
+- PR # [53](https://github.com/Frazzer951/fpm/pull/53): cleanup cli and move it to another file
+- PR # [54](https://github.com/Frazzer951/fpm/pull/54): Move CLI stuff to another file
+- PR # [56](https://github.com/Frazzer951/fpm/pull/56): Add template groups and refactor how templates are processed - …
+- PR # [57](https://github.com/Frazzer951/fpm/pull/57): update serde_yaml requirement from 0.8.24 to 0.9.0
+- PR # [58](https://github.com/Frazzer951/fpm/pull/58): Tests
+- PR # [55](https://github.com/Frazzer951/fpm/pull/55): Development 
+
+### Refactor
+
+- Move CLI stuff to another file
+- Move bulk of code into lib.rs for testing
+- Refactor projects to use a custom struct
+
+### Testing
+
+- Verify default git command
+- Add more tests for settings.rs
+- Add more tests for settings.rs
+- Add basic load test for Projects
+- Add more tests for Projects
+- Test add_project
+- Don't check tests dir for coverage
+
+## [0.4.1] - 2022-07-20
+
+### Bug Fixes
+
+- Fix bug that causes crash when no config file exists
+
+### Documentation
+
+- Update release notes
+
+### Features
+
+- Add ability to set git_command from commandline
+
+### Miscellaneous Tasks
+
+- Set version to dev
+- Remove dev from version
+
+### Other
+
+- PR # [48](https://github.com/Frazzer951/fpm/pull/48): Development
+
+## [0.4.0] - 2022-06-23
+
+### Bug Fixes
+
+- Fix the move with refactor to not place the folder inside a folder with its own name
+- Fix refactor to be able to move .git folders
+
+### Continuous Integration
+
+- Format workflows and add devlop branch to testing
+- Update dependabot config
+- Remove unessecary WIP workflow
+
+### Documentation
+
+- Update release notes
+
+### Features
+
+- Add command to add folders from a directory
+- Add command to open config dir
+- Add options to verify to determin operation
+- Add options to remove category and type when editing
+- Add ability to move and copy folders recursively
+- Add options to print what files are getting moved
+
+### Miscellaneous Tasks
+
+- Remove Cargo Lock
+- Update Git Ignore
+- Update Contributing section in readme
+- Cargo Version to 0.4.0
+- Update dependecies
+- Refactor Readme
+
+### Other
+
+- WIP workflow
+- Use fs_err instead of fs
+
+- PR # [45](https://github.com/Frazzer951/fpm/pull/45): Development
+
+## [0.3.0] - 2022-06-22
+
+### Bug Fixes
+
+- Fix error with user input when updating path in verify function
+
+### Documentation
+
+- Update release notes
+- Update release notes
+- Update release notes
+
+### Features
+
+- Create a project using a git url
+- Verify projects
+- Get similar project names
+- Verify recommends possible misspelled projects
+- Add open flag to new project closes #33
+- Add Project refactoring closes #31
+- Add Project refactoring closes #31
+- Add user definable template variables - closes #38
+- Add parent folders for file pointers
+- Add option to edit existing projects - closes #32
+
+### Miscellaneous Tasks
+
+- Update README.md
+- Update README.md
+- Center Shields
+- Remove roadmap from README.md
+- Update FPM Version to 0.3.0
+- Add Comments
+
+### Other
+
+- PR # [39](https://github.com/Frazzer951/fpm/pull/39): Create a project using a git url
+- PR # [40](https://github.com/Frazzer951/fpm/pull/40): verify projects
+- Create LICENSE
+- PR # [41](https://github.com/Frazzer951/fpm/pull/41): LICENSE
+- PR # [42](https://github.com/Frazzer951/fpm/pull/42): levenshtein dist
+- Merge remote-tracking branch 'origin/main'
+
+# Conflicts:
+#	src/project.rs
+
+
+### Refactor
+
+- Extract sub commands into separate methods
+- Move project functions into project.rs
+- Move list from a subcommand of project, to a base subcommand
+- Make project directory a global argument, so it can be parsed earlier
+
+## [0.2.0] - 2022-06-16
+
+### Bug Fixes
+
+- Fix Release action to use the correct binary
+- Clone project to solve missing traits
+- Fix clippy errors on un-needed muts
+- Fix all the errors shown by clippy
+
+### Continuous Integration
+
+- Change dependabot commit prefix
+- Fix action names
+
+### Documentation
+
+- Update release notes
+
+### Features
+
+- Add config setting to set a template directory
+- Use specified template directory
+
+### Miscellaneous Tasks
+
+- Change cargo version number
+- Update issue templates
+- Update issue templates
+- Remove old templates
+- Update packages
+
+### Other
+
+- Merge remote-tracking branch 'origin/main'
+
+- :arrow_up: Bump actions/checkout from 2 to 3
+
+Bumps [actions/checkout](https://github.com/actions/checkout) from 2 to 3.
+- [Release notes](https://github.com/actions/checkout/releases)
+- [Changelog](https://github.com/actions/checkout/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/actions/checkout/compare/v2...v3)
+
+---
+updated-dependencies:
+- dependency-name: actions/checkout
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+- :arrow_up: Bump clap from 3.1.18 to 3.2.3
+
+Bumps [clap](https://github.com/clap-rs/clap) from 3.1.18 to 3.2.3.
+- [Release notes](https://github.com/clap-rs/clap/releases)
+- [Changelog](https://github.com/clap-rs/clap/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/clap-rs/clap/compare/v3.1.18...v3.2.3)
+
+---
+updated-dependencies:
+- dependency-name: clap
+  dependency-type: direct:production
+  update-type: version-update:semver-minor
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+- PR # [29](https://github.com/Frazzer951/fpm/pull/29): Bump clap from 3.1.18 to 3.2.3
+- PR # [27](https://github.com/Frazzer951/fpm/pull/27): Bump actions/checkout from 2 to 3
+- Update issue templates
+
+### Refactor
+
+- Extract main match statement into functions
+- Switch from Clap Derive API to Builder API
+- Fix rustfmt.toml and format
+
+## [0.1.0] - 2022-06-13
+
+### Bug Fixes
+
+- Fix formatting
+
+- Fix template alias
+
+
+### Continuous Integration
+
+- Add auto-changelog generation on release
+
+### Documentation
+
+- Add config dir directions
+
+### Other
+
+- First commit
+
+- Add project files
+
+- Start of project manager
+
+- Parse template
+
+- Working setup for c++
+
+- Add CI files
+
+- Run fixes
+
+- Cargo Fmt and Clippy Fixes
+
+- PR # [1](https://github.com/Frazzer951/fpm/pull/1): Fmt and Clippy Fixes
+- Remove some tests
+
+- Implement open and git flags
+
+- Ability to specify templates
+
+- Move template stuff to its own folder
+
+- Move file operations into its own file
+
+- Add comments
+
+- Update packages
+
+- Make readme optional
+
+- Can include custom commands to run before creating folders and files
+
+- Reorder some code
+
+- Create rust-clippy.yml
+- Update README.md
+
+- Merge remote-tracking branch 'origin/main'
+
+- Start of new config command
+
+- Remove templates directory
+
+- Add template submodule
+
+- Remove config stuff for now
+
+- :arrow_up: Bump github/codeql-action from 1 to 2
+
+Bumps [github/codeql-action](https://github.com/github/codeql-action) from 1 to 2.
+- [Release notes](https://github.com/github/codeql-action/releases)
+- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)
+- [Commits](https://github.com/github/codeql-action/compare/v1...v2)
+
+---
+updated-dependencies:
+- dependency-name: github/codeql-action
+  dependency-type: direct:production
+  update-type: version-update:semver-major
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+- Update dependabot
+
+- Update dependabot config
+
+- Rename project
+
+- Rename Project
+
+- Setup basic structure
+
+- Very basic functionality
+
+- PR # [6](https://github.com/Frazzer951/fpm/pull/6): Bump github/codeql-action from 1 to 2
+- Format
+
+- Update workflow and format
+
+- Config Settings
+
+- Remove test_offline from test.yml
+
+- New an Improved GitHub Actions
+
+- Fix ToolChain
+
+- Save projects to a json file
+
+- File Error Handling
+
+- Error if folder isnt empty
+
+- Refactoring
+
+- Start of templates
+
+- Process templates
+
+- Remove duplicates when saving projects db
+
+- Process file and folder pointers
+
+- Specify multiple templates
+
+- Format
+
+- Ability to add projects
+
+- List out known projects with a filter options
+
+- Update README.md
+
+
+### Refactor
+
+- Rename config to Settings and move it into its own file
+
