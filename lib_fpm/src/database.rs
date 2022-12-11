@@ -41,8 +41,6 @@ mod tests {
     use crate::config::Config;
     use anyhow::Result;
 
-    // TODO: Write tests for database with actual projects
-
     #[test]
     fn test_add() -> Result<()> {
         let config = Config {
