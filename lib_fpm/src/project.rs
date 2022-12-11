@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use turbosql::Turbosql;
 
-#[derive(Turbosql, Default, Debug, PartialEq, Eq)]
+#[derive(Turbosql, Default, Debug, PartialEq, Eq, Clone)]
 pub struct Project {
     pub rowid: Option<i64>,
     pub name: Option<String>,

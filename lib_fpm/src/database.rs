@@ -65,7 +65,7 @@ mod tests {
         let projects = load_projects(&config)?;
         assert_eq!(projects.len(), 1);
 
-        let p = projects.get(0).unwrap();
+        let p = projects[0].clone();
 
         assert_eq!(project.name, p.name);
         assert_eq!(project.desc, p.desc);
