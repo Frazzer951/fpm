@@ -1,4 +1,5 @@
 use crate::{config::Config, project::Project, utils};
+use fs_err as fs;
 use std::path::PathBuf;
 use std::sync::Once;
 use turbosql::{select, set_db_path, Turbosql};
@@ -7,6 +8,12 @@ static DB_INIT: Once = Once::new();
 
 fn set_db(config: &Config) -> utils::Result<()> {
     let path = PathBuf::from(&config.database_path);
+
+    let mut dir = path.clone();
+    dir.pop();
+
+    fs::create_dir_all(dir)?;
+
     DB_INIT.call_once(|| {
         match set_db_path(path.as_path()) {
             Ok(_) => {},
