@@ -1,12 +1,13 @@
-use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use turbosql::Turbosql;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Turbosql, Default, Debug, PartialEq, Eq)]
 pub struct Project {
-    pub name: String,
+    pub rowid: Option<i64>,
+    pub name: Option<String>,
     pub desc: Option<String>,
-    pub directory: PathBuf,
-    pub tags: Vec<String>,
+    pub directory: Option<PathBuf>,
+    pub tags: Option<Vec<String>>,
     pub language: Option<String>,
     pub category: Option<String>,
 }

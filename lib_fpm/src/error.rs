@@ -11,5 +11,5 @@ pub enum Error {
     IO(#[from] std::io::Error),
 
     #[error(transparent)]
-    Json(#[from] serde_json::Error),
+    Sql(#[from] turbosql::Error),
 }

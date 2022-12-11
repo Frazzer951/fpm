@@ -1,115 +1,78 @@
-// JSON Databases
-
-// Project Database
-//  Load
-//  Save
-
-use crate::{config::Config, error::Error, project::Project, utils::Result};
-use fs_err as fs;
-use serde::{Deserialize, Serialize};
+use crate::{config::Config, project::Project, utils};
 use std::path::PathBuf;
+use std::sync::Once;
+use turbosql::{select, set_db_path, Turbosql};
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
-pub struct Database {
-    projects: Vec<Project>,
+static DB_INIT: Once = Once::new();
+
+fn set_db(config: &Config) -> utils::Result<()> {
+    let path = PathBuf::from(&config.database_path);
+    DB_INIT.call_once(|| {
+        match set_db_path(path.as_path()) {
+            Ok(_) => {},
+            Err(e) => panic!("{e}"),
+        };
+    });
+    Ok(())
 }
 
-impl Default for Database {
-    fn default() -> Self {
-        Self::new()
-    }
+pub fn add_project(config: &Config, project: &Project) -> utils::Result<()> {
+    set_db(config)?;
+
+    project.insert()?;
+
+    Ok(())
 }
 
-impl Database {
-    pub fn new() -> Self {
-        Self { projects: vec![] }
-    }
+pub fn load_projects(config: &Config) -> utils::Result<Vec<Project>> {
+    set_db(config)?;
 
-    pub fn load_database(config: &Config) -> Result<Self> {
-        let path = PathBuf::from(&config.database_path);
+    let projects = select!(Vec<Project>);
 
-        let data = match fs::read_to_string(path) {
-            Ok(d) => d,
-            Err(e) => {
-                return Err(Error::IO(e));
-            },
-        };
-        let db = match serde_json::from_str::<Database>(&data) {
-            Ok(db) => db,
-            Err(e) => {
-                return Err(Error::Json(e));
-            },
-        };
-
-        Ok(db)
-    }
-
-    pub fn save_database(&self, config: &Config) -> Result<()> {
-        let path = PathBuf::from(&config.database_path);
-
-        let data = match serde_json::to_string(self) {
-            Ok(d) => d,
-            Err(e) => {
-                return Err(Error::Json(e));
-            },
-        };
-
-        let parent_dir = path.parent();
-        if let Some(parent_dir) = parent_dir {
-            match fs::create_dir_all(parent_dir) {
-                Ok(_) => {},
-                Err(e) => {
-                    return Err(Error::IO(e));
-                },
-            }
-        }
-
-        match fs::write(path, data) {
-            Ok(_) => Ok(()),
-            Err(e) => Err(Error::IO(e)),
-        }
+    match projects {
+        Ok(projects) => Ok(projects),
+        Err(e) => Err(crate::error::Error::Sql(e)),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{config::Config, utils::test_utils::is_same_file};
+    use crate::config::Config;
     use anyhow::Result;
-    use std::path::Path;
 
     // TODO: Write tests for database with actual projects
 
     #[test]
-    fn test_load_empty_database() -> Result<()> {
+    fn test_add() -> Result<()> {
         let config = Config {
-            database_path: "./tests/expected_files/emptyDB.json".to_owned(),
+            database_path: "./tests/test_files/database.db".to_owned(),
         };
 
-        let db = Database::load_database(&config)?;
+        let _ = std::fs::remove_file(&config.database_path);
 
-        assert_eq!(Database::default(), db);
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_save_empty_database() -> Result<()> {
-        let db = Database::default();
-        let config = Config {
-            database_path: "./tests/test_files/emptyDB.json".to_owned(),
+        let project = Project {
+            rowid: None,
+            name: Some("Test".to_owned()),
+            desc: Some("a test project".to_owned()),
+            directory: Some(PathBuf::from("C:\\dev\\rust\\fpm")),
+            tags: Some(vec!["test".to_owned(), "project".to_owned()]),
+            language: Some("rust".to_owned()),
+            category: None,
         };
 
-        if Path::new(&config.database_path).exists() {
-            fs::remove_file(&config.database_path)?;
-        }
+        add_project(&config, &project)?;
+        let projects = load_projects(&config)?;
+        assert_eq!(projects.len(), 1);
 
-        db.save_database(&config)?;
+        let p = projects.get(0).unwrap();
 
-        assert!(is_same_file(
-            Path::new("./tests/expected_files/emptyDB.json"),
-            Path::new("./tests/test_files/emptyDB.json")
-        )?);
+        assert_eq!(project.name, p.name);
+        assert_eq!(project.desc, p.desc);
+        assert_eq!(project.directory, p.directory);
+        assert_eq!(project.tags, p.tags);
+        assert_eq!(project.language, p.language);
+        assert_eq!(project.category, p.category);
 
         Ok(())
     }
