@@ -4,4 +4,5 @@ name = "fpm"
 version = "0.1.0"
 
 [dependencies]
+clap = {version = "4.0", features = ["cargo"]}
 lib_fpm = {path = "../lib_fpm"}

@@ -4,7 +4,7 @@ use std::path::PathBuf;
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Project {
     pub name: String,
-    pub desc: String,
+    pub desc: Option<String>,
     pub directory: PathBuf,
     pub tags: Vec<String>,
     pub language: Option<String>,
