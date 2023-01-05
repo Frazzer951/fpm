@@ -8,5 +8,6 @@ clap = {version = "4.0", features = ["cargo"]}
 console = "0.15"
 dialoguer = "0.10"
 eyre = "0.6"
+indicatif = "0.17"
 lib_fpm = {path = "../lib_fpm"}
 thiserror = "1.0"

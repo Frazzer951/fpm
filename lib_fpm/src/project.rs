@@ -1,3 +1,5 @@
+use crate::config::Config;
+use fs_err as fs;
 use std::path::PathBuf;
 use turbosql::Turbosql;
 
@@ -29,5 +31,20 @@ impl Project {
             language,
             category,
         }
+    }
+
+    pub fn build(&mut self, dir: Option<PathBuf>, config: Config) -> crate::utils::Result<()> {
+        let dir = if let Some(dir) = dir {
+            self.directory = Some(dir.clone());
+            dir
+        } else {
+            let dir = config.gen_project_folder(self)?;
+            self.directory = Some(dir.clone());
+            dir
+        };
+
+        fs::create_dir_all(dir)?;
+
+        Ok(())
     }
 }

@@ -1,12 +1,15 @@
 use crate::error::Error;
+use crate::project::Project;
 use crate::utils::{config_folder, Result};
 use fs_err as fs;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
     pub database_path: String,
+    pub base_dir: Option<String>,
 }
 
 impl Default for Config {
@@ -24,6 +27,7 @@ impl Config {
 
         Self {
             database_path: db_path.to_str().unwrap_or_default().to_owned(),
+            base_dir: None,
         }
     }
 
@@ -66,5 +70,27 @@ impl Config {
         };
 
         Ok(())
+    }
+
+    pub fn gen_project_folder(&self, project: &Project) -> Result<PathBuf> {
+        let mut path = PathBuf::new();
+
+        if let Some(base_dir) = &self.base_dir {
+            path.push(base_dir);
+        } else {
+            return Err(Error::ConfigMissingValue("base_dir".to_owned()));
+        }
+
+        if let Some(cat) = &project.category {
+            path.push(cat);
+        }
+        if let Some(lang) = &project.language {
+            path.push(lang);
+        }
+        if let Some(name) = &project.name {
+            path.push(name);
+        }
+
+        Ok(path)
     }
 }

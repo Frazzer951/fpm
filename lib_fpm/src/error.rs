@@ -18,4 +18,7 @@ pub enum Error {
 
     #[error(transparent)]
     TomlSer(#[from] toml::ser::Error),
+
+    #[error("config missing needed value for `{0}`")]
+    ConfigMissingValue(String),
 }
