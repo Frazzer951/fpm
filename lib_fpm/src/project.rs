@@ -12,4 +12,22 @@ pub struct Project {
     pub category: Option<String>,
 }
 
-impl Project {}
+impl Project {
+    pub fn new(
+        name: Option<String>,
+        desc: Option<String>,
+        tags: Vec<String>,
+        language: Option<String>,
+        category: Option<String>,
+    ) -> Self {
+        Project {
+            rowid: None,
+            name,
+            desc,
+            directory: None,
+            tags: Some(tags),
+            language,
+            category,
+        }
+    }
+}
