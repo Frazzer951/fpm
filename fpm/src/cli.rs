@@ -1,14 +1,18 @@
 use crate::interactive_inputs;
 use crate::utils::{create_spinner, Error, Result};
 use clap::{command, value_parser, Arg, ArgAction, Command};
-use lib_fpm::{config::Config, database::add_project, project::Project};
+use lib_fpm::{
+    config::Config,
+    database::{add_project, load_projects},
+    project::Project,
+};
 use std::path::PathBuf;
 
 fn cli() -> Command {
     command!()
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .subcommands(vec![subcommand_new()])
+        .subcommands(vec![subcommand_new(), subcommand_list()])
 }
 
 fn subcommand_new() -> Command {
@@ -38,6 +42,10 @@ fn subcommand_new() -> Command {
             .long("interactive")
             .action(ArgAction::SetTrue),
     ])
+}
+
+fn subcommand_list() -> Command {
+    Command::new("list").about("List the projects in the database")
 }
 
 pub fn parse() -> Result<()> {
@@ -101,6 +109,21 @@ pub fn parse() -> Result<()> {
             add_project(&config, &project)?;
 
             println!("{project:#?}");
+        },
+        Some(("list", _)) => {
+            let projects = load_projects(&config)?;
+
+            for project in projects {
+                println!(
+                    "{} - {} [{}]",
+                    project.name.unwrap_or_default(),
+                    project.desc.unwrap_or_default(),
+                    project.directory.unwrap_or_default().display()
+                );
+            }
+        },
+        Some((command, _)) => {
+            println!("Code has not yet been written from `{command}`");
         },
         _ => unreachable!(),
     }
