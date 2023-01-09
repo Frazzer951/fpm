@@ -1,7 +1,7 @@
 use crate::interactive_inputs;
 use crate::utils::{create_spinner, Error, Result};
 use clap::{command, value_parser, Arg, ArgAction, Command};
-use lib_fpm::{config::Config, project::Project};
+use lib_fpm::{config::Config, database::add_project, project::Project};
 use std::path::PathBuf;
 
 fn cli() -> Command {
@@ -86,7 +86,7 @@ pub fn parse() -> Result<()> {
             let mut project = Project::new(name, desc, tags, language, category);
 
             let pb = create_spinner("Creating Folder...")?;
-            match project.build(dir, config) {
+            match project.build(dir, &config) {
                 Ok(_) => {},
                 Err(e) => match e {
                     lib_fpm::error::Error::ConfigMissingValue(e) => {
@@ -98,7 +98,7 @@ pub fn parse() -> Result<()> {
             };
             pb.finish_with_message("Folder Created");
 
-            // TODO: Save Project to database
+            add_project(&config, &project)?;
 
             println!("{project:#?}");
         },

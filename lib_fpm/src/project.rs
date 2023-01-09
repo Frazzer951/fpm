@@ -33,7 +33,7 @@ impl Project {
         }
     }
 
-    pub fn build(&mut self, dir: Option<PathBuf>, config: Config) -> crate::utils::Result<()> {
+    pub fn build(&mut self, dir: Option<PathBuf>, config: &Config) -> crate::utils::Result<()> {
         let dir = if let Some(dir) = dir {
             self.directory = Some(dir.clone());
             dir
