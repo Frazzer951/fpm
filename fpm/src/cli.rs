@@ -6,6 +6,7 @@ use lib_fpm::{
     database::{add_project, load_projects},
     project::Project,
 };
+use prettytable::{format, row, Table};
 use std::path::PathBuf;
 
 fn cli() -> Command {
@@ -113,14 +114,19 @@ pub fn parse() -> Result<()> {
         Some(("list", _)) => {
             let projects = load_projects(&config)?;
 
+            let mut table = Table::new();
+            table.set_format(*format::consts::FORMAT_BOX_CHARS);
+            table.set_titles(row!["Name", "Description", "Directory"]);
+
             for project in projects {
-                println!(
-                    "{} - {} [{}]",
+                table.add_row(row![
                     project.name.unwrap_or_default(),
                     project.desc.unwrap_or_default(),
                     project.directory.unwrap_or_default().display()
-                );
+                ]);
             }
+
+            table.printstd();
         },
         Some((command, _)) => {
             println!("Code has not yet been written from `{command}`");

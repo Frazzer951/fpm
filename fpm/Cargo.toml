@@ -10,4 +10,5 @@ dialoguer = "0.10"
 eyre = "0.6"
 indicatif = "0.17"
 lib_fpm = {path = "../lib_fpm"}
+prettytable-rs = "0.10"
 thiserror = "1.0"
