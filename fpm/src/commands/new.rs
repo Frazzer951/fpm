@@ -1,9 +1,11 @@
-use crate::utils::Result;
+use crate::utils::{create_spinner, Error, Result};
 use console::Term;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
+use lib_fpm::{config::Config, database::add_project, project::Project};
+use std::path::PathBuf;
 
-pub(crate) struct NewParams {
+struct NewParams {
     pub(crate) name: Option<String>,
     pub(crate) desc: Option<String>,
     pub(crate) tags: Vec<String>,
@@ -11,7 +13,60 @@ pub(crate) struct NewParams {
     pub(crate) category: Option<String>,
 }
 
-pub(crate) fn new_params_interactive(
+pub fn new(sub_matches: &clap::ArgMatches, config: &Config) -> Result<()> {
+    let dir = sub_matches.get_one::<PathBuf>("directory").cloned();
+    let mut name = sub_matches.get_one::<String>("name").cloned();
+    let mut desc = sub_matches.get_one::<String>("desc").cloned();
+    let mut language = sub_matches.get_one::<String>("language").cloned();
+    let mut category = sub_matches.get_one::<String>("category").cloned();
+    let mut tags = sub_matches
+        .get_many::<String>("tags")
+        .into_iter()
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
+    let interactive = sub_matches.get_flag("interactive");
+    if interactive {
+        let new_params = new_params_interactive(name, desc, tags, language, category)?;
+
+        name = new_params.name;
+        desc = new_params.desc;
+        tags = new_params.tags;
+        language = new_params.language;
+        category = new_params.category;
+
+        println!("\n\n");
+        println!("Name: {name:?}");
+        println!("Desc: {desc:?}");
+        println!("Tags: {tags:?}");
+        println!("Language: {language:?}");
+        println!("Category: {category:?}");
+    }
+    if name.is_none() {
+        println!("A name is required for a project, please specify one");
+        return Ok(());
+    }
+    let mut project = Project::new(name, desc, tags, language, category);
+    let pb = create_spinner("Creating Folder...")?;
+    match project.build(dir, config) {
+        Ok(_) => {},
+        Err(e) => match e {
+            lib_fpm::error::Error::ConfigMissingValue(e) => {
+                println!(
+                    "Missing a value for `{e}`, either set it in the config, or pass a directory through the command line"
+                );
+                return Ok(());
+            },
+            e => return Err(Error::Fpm(e)),
+        },
+    };
+    pb.finish_with_message("Folder Created");
+    add_project(config, &project)?;
+    println!("{project:#?}");
+    Ok(())
+}
+
+fn new_params_interactive(
     name: Option<String>,
     desc: Option<String>,
     mut tags: Vec<String>,

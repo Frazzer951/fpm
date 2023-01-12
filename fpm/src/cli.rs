@@ -1,12 +1,6 @@
-use crate::interactive_inputs;
-use crate::utils::{create_spinner, Error, Result};
+use crate::{commands, utils::Result};
 use clap::{command, value_parser, Arg, ArgAction, Command};
-use lib_fpm::{
-    config::Config,
-    database::{add_project, load_projects},
-    project::Project,
-};
-use prettytable::{format, row, Table};
+use lib_fpm::config::Config;
 use std::path::PathBuf;
 
 fn cli() -> Command {
@@ -56,77 +50,10 @@ pub fn parse() -> Result<()> {
 
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
-            let dir = sub_matches.get_one::<PathBuf>("directory").cloned();
-
-            let mut name = sub_matches.get_one::<String>("name").cloned();
-            let mut desc = sub_matches.get_one::<String>("desc").cloned();
-            let mut language = sub_matches.get_one::<String>("language").cloned();
-            let mut category = sub_matches.get_one::<String>("category").cloned();
-            let mut tags = sub_matches
-                .get_many::<String>("tags")
-                .into_iter()
-                .flatten()
-                .cloned()
-                .collect::<Vec<_>>();
-            let interactive = sub_matches.get_flag("interactive");
-
-            if interactive {
-                let new_params = interactive_inputs::new_params_interactive(name, desc, tags, language, category)?;
-
-                name = new_params.name;
-                desc = new_params.desc;
-                tags = new_params.tags;
-                language = new_params.language;
-                category = new_params.category;
-
-                println!("\n\n");
-                println!("Name: {name:?}");
-                println!("Desc: {desc:?}");
-                println!("Tags: {tags:?}");
-                println!("Language: {language:?}");
-                println!("Category: {category:?}");
-            }
-
-            if name.is_none() {
-                println!("A name is required for a project, please specify one");
-                return Ok(());
-            }
-
-            let mut project = Project::new(name, desc, tags, language, category);
-
-            let pb = create_spinner("Creating Folder...")?;
-            match project.build(dir, &config) {
-                Ok(_) => {},
-                Err(e) => match e {
-                    lib_fpm::error::Error::ConfigMissingValue(e) => {
-                        println!("Missing a value for `{e}`, either set it in the config, or pass a directory through the command line");
-                        return Ok(());
-                    },
-                    e => return Err(Error::Fpm(e)),
-                },
-            };
-            pb.finish_with_message("Folder Created");
-
-            add_project(&config, &project)?;
-
-            println!("{project:#?}");
+            commands::new::new(sub_matches, &config)?;
         },
         Some(("list", _)) => {
-            let projects = load_projects(&config)?;
-
-            let mut table = Table::new();
-            table.set_format(*format::consts::FORMAT_BOX_CHARS);
-            table.set_titles(row!["Name", "Description", "Directory"]);
-
-            for project in projects {
-                table.add_row(row![
-                    project.name.unwrap_or_default(),
-                    project.desc.unwrap_or_default(),
-                    project.directory.unwrap_or_default().display()
-                ]);
-            }
-
-            table.printstd();
+            commands::list::list(&config)?;
         },
         Some((command, _)) => {
             println!("Code has not yet been written from `{command}`");
