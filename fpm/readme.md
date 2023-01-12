@@ -1,3 +1,7 @@
-## Checkout
+# TODO
 
-https://crates.io/crates/prettytable-rs
+- Commands
+  - Add
+  - Discover
+  - Reset
+- Templates
