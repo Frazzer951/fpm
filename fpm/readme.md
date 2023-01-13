@@ -3,5 +3,4 @@
 - Commands
   - Add
   - Discover
-  - Reset
 - Templates
