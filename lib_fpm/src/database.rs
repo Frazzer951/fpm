@@ -42,6 +42,11 @@ pub fn load_projects(config: &Config) -> utils::Result<Vec<Project>> {
     }
 }
 
+pub fn reset_database(config: &Config) -> utils::Result<()> {
+    fs::remove_file(&config.database_path)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

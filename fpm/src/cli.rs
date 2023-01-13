@@ -7,7 +7,7 @@ fn cli() -> Command {
     command!()
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .subcommands(vec![subcommand_new(), subcommand_list()])
+        .subcommands(vec![subcommand_new(), subcommand_list(), subcommand_reset()])
 }
 
 fn subcommand_new() -> Command {
@@ -43,6 +43,16 @@ fn subcommand_list() -> Command {
     Command::new("list").about("List the projects in the database")
 }
 
+fn subcommand_reset() -> Command {
+    Command::new("reset")
+        .about("Reset the project database to be empty")
+        .args(&[Arg::new("force")
+            .short('f')
+            .long("force")
+            .help("Bypass conformation prompt and reset the database")
+            .action(ArgAction::SetTrue)])
+}
+
 pub fn parse() -> Result<()> {
     let matches = cli().get_matches();
 
@@ -54,6 +64,9 @@ pub fn parse() -> Result<()> {
         },
         Some(("list", _)) => {
             commands::list::list(&config)?;
+        },
+        Some(("reset", sub_matches)) => {
+            commands::reset::reset(sub_matches, &config)?;
         },
         Some((command, _)) => {
             println!("Code has not yet been written from `{command}`");

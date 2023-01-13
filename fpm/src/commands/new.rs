@@ -1,4 +1,5 @@
 use crate::utils::{create_spinner, Error, Result};
+use clap::ArgMatches;
 use console::Term;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
@@ -13,7 +14,7 @@ struct NewParams {
     pub(crate) category: Option<String>,
 }
 
-pub fn new(sub_matches: &clap::ArgMatches, config: &Config) -> Result<()> {
+pub fn new(sub_matches: &ArgMatches, config: &Config) -> Result<()> {
     let dir = sub_matches.get_one::<PathBuf>("directory").cloned();
     let mut name = sub_matches.get_one::<String>("name").cloned();
     let mut desc = sub_matches.get_one::<String>("desc").cloned();
