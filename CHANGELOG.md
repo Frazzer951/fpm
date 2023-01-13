@@ -2,6 +2,10 @@
 
 ## [unreleased]
 
+### Bug Fixes
+
+- Make sure path to database exists before trying to connect
+
 ### Continuous Integration
 
 - Conditional steps
@@ -9,6 +13,15 @@
 - Remove brackets from release.yaml
 - Use proper extension
 - Enforce more clippy checks, closes #59
+- Update changelog action
+- Add Manual dispatch of changelog generation
+- Update git-cliff-action to v2
+
+### Documentation
+
+- Update TOC
+- Update CLI Readme
+- Update ToDo's
 
 ### Features
 
@@ -18,20 +31,39 @@
 - Default Config
 - Save database to file
 - Start of cli to create project
+- Load and Save config
+- Start of creating new project
+- Create Project Folder
+- Create project folder and add it to the database
+- Basic implementation of `list`
+- Prettify printing of project list
+- Reset Database
 
 ### Miscellaneous Tasks
 
 - Setup more modules
 - Add rustfmt.toml
+- Update readme with resources
+
+### Other
+
+- Update changelog generation
+
 
 ### Refactor
 
 - Rename crates
+- Rewrite database.rs to use an SQLite DB
+- No longer create new config if one doesnt already exist
+- Cleanup New Project Function
+- Move all command into own module to improve readability
 
 ### Testing
 
 - Setup infra for testing if files are equal
 - Save and Load empty database
+- Fix error in test
+- Add prints to debug testing
 
 ## [0.6.0] - 2022-11-12
 
