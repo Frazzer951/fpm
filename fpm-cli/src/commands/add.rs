@@ -3,7 +3,7 @@ use clap::ArgMatches;
 use console::Term;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
-use lib_fpm::{config::Config, database::add_project, project::Project};
+use fpm_lib::{config::Config, database::add_project, project::Project};
 use std::path::PathBuf;
 
 struct AddParams {

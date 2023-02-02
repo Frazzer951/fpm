@@ -12,7 +12,7 @@ pub enum Error {
     Indicatif(#[from] indicatif::style::TemplateError),
 
     #[error(transparent)]
-    Fpm(#[from] lib_fpm::error::Error),
+    Fpm(#[from] fpm_lib::error::Error),
 }
 
 pub fn create_spinner(msg: &str) -> Result<ProgressBar> {

@@ -262,17 +262,32 @@ dependencies = [
 ]
 
 [[package]]
-name = "fpm"
+name = "fpm-cli"
 version = "0.6.0"
 dependencies = [
  "clap",
  "console",
  "dialoguer",
  "eyre",
+ "fpm-lib",
  "indicatif",
- "lib_fpm",
  "prettytable-rs",
  "thiserror",
+]
+
+[[package]]
+name = "fpm-lib"
+version = "0.6.0"
+dependencies = [
+ "anyhow",
+ "diff",
+ "dirs",
+ "fs-err",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "toml 0.7.1",
+ "turbosql",
 ]
 
 [[package]]
@@ -414,21 +429,6 @@ name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
-
-[[package]]
-name = "lib_fpm"
-version = "0.6.0"
-dependencies = [
- "anyhow",
- "diff",
- "dirs",
- "fs-err",
- "serde",
- "serde_json",
- "thiserror",
- "toml 0.7.1",
- "turbosql",
-]
 
 [[package]]
 name = "libc"

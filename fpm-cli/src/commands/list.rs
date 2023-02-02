@@ -1,5 +1,5 @@
 use crate::utils::Result;
-use lib_fpm::{config::Config, database::load_projects};
+use fpm_lib::{config::Config, database::load_projects};
 use prettytable::{format, row, Table};
 
 pub fn list(config: &Config) -> Result<()> {

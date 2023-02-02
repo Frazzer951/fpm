@@ -1,7 +1,7 @@
 use crate::utils::Result;
 use clap::ArgMatches;
 use dialoguer::Confirm;
-use lib_fpm::{config::Config, database};
+use fpm_lib::{config::Config, database};
 
 pub fn reset(sub_matches: &ArgMatches, config: &Config) -> Result<()> {
     let force = sub_matches.get_flag("force");

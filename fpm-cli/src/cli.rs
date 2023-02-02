@@ -1,6 +1,6 @@
 use crate::{commands, utils::Result};
 use clap::{command, value_parser, Arg, ArgAction, Command};
-use lib_fpm::config::Config;
+use fpm_lib::config::Config;
 use std::path::PathBuf;
 
 fn cli() -> Command {

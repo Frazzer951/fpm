@@ -3,7 +3,7 @@ use clap::ArgMatches;
 use console::Term;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::Input;
-use lib_fpm::{config::Config, database::add_project, project::Project};
+use fpm_lib::{config::Config, database::add_project, project::Project};
 use std::path::PathBuf;
 
 struct NewParams {
@@ -52,7 +52,7 @@ pub fn new(sub_matches: &ArgMatches, config: &Config) -> Result<()> {
     match project.build(dir, config) {
         Ok(_) => {},
         Err(e) => match e {
-            lib_fpm::error::Error::ConfigMissingValue(e) => {
+            fpm_lib::error::Error::ConfigMissingValue(e) => {
                 println!(
                     "Missing a value for `{e}`, either set it in the config, or pass a directory through the command line"
                 );
