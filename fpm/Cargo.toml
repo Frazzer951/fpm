@@ -14,7 +14,7 @@ console = "0.15"
 dialoguer = "0.10"
 eyre = "0.6"
 indicatif = "0.17"
-lib_fpm = {path = "../lib_fpm"}
+lib_fpm = {path = "../lib_fpm", version = "0.6.0"}
 prettytable-rs = "0.10"
 thiserror = "1.0"
 
