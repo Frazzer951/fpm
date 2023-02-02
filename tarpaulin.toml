@@ -1,2 +1,2 @@
 [config]
-exclude-files = ["src/lib.rs", "src/cli.rs", "tests/*"]
+exclude-files = []
