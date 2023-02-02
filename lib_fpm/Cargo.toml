@@ -1,9 +1,11 @@
 [package]
+authors = ["Luke Eltiste"]
+description = "A CLI Project Manager to create and manage directories for all of your projects"
 edition = "2021"
+license = "MIT"
 name = "lib_fpm"
+repository = "https://github.com/Frazzer951/fpm"
 version = "0.6.0"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 dirs = "4.0"
@@ -17,3 +19,6 @@ turbosql = "0.7"
 [dev-dependencies]
 anyhow = "1.0"
 diff = "0.1"
+
+[package.metadata.release]
+release = false
