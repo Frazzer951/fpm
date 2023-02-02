@@ -1,6 +1,9 @@
 # TODO
 
 - Commands
-  - Add
   - Discover
 - Templates
+
+# BUG
+
+- Cannot paste in interactive mode
