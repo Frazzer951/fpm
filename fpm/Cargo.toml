@@ -17,3 +17,6 @@ indicatif = "0.17"
 lib_fpm = {path = "../lib_fpm"}
 prettytable-rs = "0.10"
 thiserror = "1.0"
+
+[package.metadata.release]
+shared-version = true
