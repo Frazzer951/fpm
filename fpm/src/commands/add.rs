@@ -74,7 +74,7 @@ fn add_params_interactive(
         Input::with_theme(&ColorfulTheme::default())
             .with_prompt("Project Name")
             .with_initial_text(name.unwrap_or_default())
-            .interact()?,
+            .interact_text()?,
     );
 
     // Get Directory
