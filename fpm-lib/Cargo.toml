@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 name = "fpm-lib"
 repository = "https://github.com/Frazzer951/fpm"
-version = "0.6.0"
+version = "0.6.1"
 
 [dependencies]
 dirs = "4.0"
