@@ -7,9 +7,9 @@ updates:
     schedule:
       interval: "daily"
     allow:
-      - dependency-type: "direct"
+      dependency-type: "direct"
     ignore:
-      - update-types: ["version-update:semver-patch"]
+      update-types: ["version-update:semver-patch"]
     commit-message:
       prefix: "chore:"
     assignees:
@@ -21,7 +21,7 @@ updates:
     schedule:
       interval: "daily"
     allow:
-      - dependency-type: "direct"
+      dependency-type: "direct"
     commit-message:
       prefix: "chore:"
     assignees:
