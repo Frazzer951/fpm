@@ -3,6 +3,8 @@
 <!-- PROJECT SHIELDS -->
 <div align="center">
 
+## PROJECT RENAMED AND MOVED TO [PROJECT ORGANIZER](https://github.com/Frazzer951/ProjectOrganzier)
+
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -35,6 +37,7 @@
 <details>
   <summary>Table of Contents</summary>
 
+- [PROJECT RENAMED AND MOVED TO PROJECT ORGANIZER](#project-renamed-and-moved-to-project-organizer)
 - [About The Project](#about-the-project)
   - [Built With](#built-with)
 - [Getting Started](#getting-started)
